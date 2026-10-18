@@ -81,6 +81,7 @@ import {
   normalizeResume,
   countWords,
   briefFeedback,
+  briefNextStep,
   githubUsername,
   resumeFilename,
   validateResume,
@@ -3276,14 +3277,7 @@ function App() {
                             )}
                           </h3>
                           <p>{briefFeedback(f.evidence)}</p>
-                          {f.suggestion && (
-                            <p>
-                              <strong>
-                                {f.status === "pass" ? "Keep:" : "Next step:"}
-                              </strong>{" "}
-                              {f.suggestion}
-                            </p>
-                          )}
+                          {f.suggestion && <p><strong>Next step:</strong> {briefNextStep(f.suggestion)}</p>}
                           {f.requirement && (
                             <details className="finding-requirement">
                               <summary>What this check looks for</summary>
@@ -3504,6 +3498,8 @@ function App() {
                   className={`card layout-option ${layout === "template" ? "selected" : ""}`}
                 >
                   <h2>PNB Paws version</h2>
+                  {aiResume?.rewriteNotice && <Notice>{aiResume.rewriteNotice}</Notice>}
+                  {aiResume?.rewriteNotice && !aiBusy && <Button secondary onClick={() => generateAiVersion(resume)}>Try PNB Paws wording again</Button>}
                   {aiResume ? (
                     <PdfPreview
                       resume={aiResume}

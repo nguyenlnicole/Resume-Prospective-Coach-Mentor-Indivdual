@@ -1,3 +1,4 @@
+import { formatExperience } from "./experience-format.js";
 import { normalizeCredentials } from "./credential-format.js";
 export const isTechnical = (level) =>
   !["General", "Normal", "Medical Field", "Educator"].includes(level);
@@ -26,20 +27,21 @@ export function githubUsername(value) {
   }
 }
 export function briefFeedback(value) {
-  const text = String(value || "")
-    .replace(/\s+/g, " ")
-    .trim();
-  if (!text)
-    return "This check needs another look. Open More details for guidance.";
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  if (!text) return "This check needs another look. Open More details for guidance.";
   if (countWords(text) <= 25 && countSentences(text) <= 3) return text;
   const capped = text.split(/\s+/).slice(0, 25).join(" ");
   const sentences = capped.match(/[^.!?]+[.!?]*/g) || [];
-  const short = sentences
-    .slice(0, 3)
-    .join(" ")
-    .trim()
-    .replace(/[,:;—-]+$/, "");
+  const short = sentences.slice(0, 3).join(" ").trim().replace(/[,:;—-]+$/, "");
   return short === text ? short : short.replace(/[.!?]+$/, "") + "…";
+}
+export function briefNextStep(value) {
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  if (!text) return "";
+  const sentences = [...new Intl.Segmenter("en", { granularity: "sentence" }).segment(text)].map(part => part.segment.trim());
+  const selected = sentences.slice(0, 2).join(" ");
+  const words = selected.split(/\s+/);
+  return words.length <= 23 ? selected : words.slice(0, 23).join(" ").replace(/[,:;.!?—-]+$/, "") + "…";
 }
 export function resumeFilename(
   name = "",
@@ -430,6 +432,7 @@ export function normalizeResume(resume) {
     "summary",
   ])
     result[key] = stripSectionHeading(result[key] || "", key);
+  result.experience = formatExperience(result.experience);
   result.projects = normalizeProjectHeadings(result.projects);
   result.education = compactEducation(result.education);
   result.certifications = normalizeCredentials(result.certifications);
@@ -561,7 +564,7 @@ export function experienceList(text = "") {
     const bullet = /^\s*[•*\-]\s/.test(line);
     const datedHeading =
       !bullet && /\b(?:19|20)\d{2}\b|\b(?:present|current)\b/i.test(line);
-    if (datedHeading && current.some((part) => /^\s*[•*\-]\s/.test(part))) {
+    if (datedHeading && current.some((part) => !/^\s*[•*\-]\s/.test(part) && /\b(?:19|20)\d{2}\b|\b(?:present|current)\b/i.test(part))) {
       finish();
       if (employer) current.push(employer);
     }

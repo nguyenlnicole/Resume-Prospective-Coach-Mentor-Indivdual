@@ -160,7 +160,7 @@
     sans-serif;
 }
 .uploaded-preview-actions {
-  padding-bottom: calc(0.2in + min(1.5in, 18dvh));
+  padding-bottom: max(0px, calc(0.2in + min(1.5in, 18dvh) - 0.25in));
   padding-right: calc(3mm + min(1.5in, 15vw));
   display: flex;
   justify-content: space-between;
