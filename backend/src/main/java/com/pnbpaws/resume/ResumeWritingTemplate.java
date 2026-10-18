@@ -42,6 +42,29 @@ final class ResumeWritingTemplate {
       """;
   static final String ROAST_PROFESSION = """
 
+      ROAST VOICE: Sound like a friend teasing someone in a group chat. Use common,
+      simple words that a middle-school reader gets immediately. Speak directly to
+      the person using you and your. Use contractions. Skip big words, business talk,
+      academic wording, elaborate metaphors, and jokes that need explaining.
+      Build each joke from one familiar work frustration and one blunt, silly twist.
+      Aim at wasted effort, annoying routines, overthinking, and work bragging.
+      It should be funny spoken out loud, not a resume review with a joke stuck on.
+      Use a short setup, then put the funniest part at the end. No pep talk or advice.
+      Style examples only, not facts about this applicant and not lines to copy:
+      Technical: You spent all day saving yourself five minutes. Great. Only 95 more
+      runs until you break even.
+      Educator: You made a whole lesson plan just to spend the first ten minutes
+      saying, please sit down.
+      Medical scheduling: You found one open appointment and somehow three people
+      already want it. Even the calendar needs a day off.
+      General office: You made a spreadsheet to track your other spreadsheets.
+      At this point, the files are managing you.
+      Choose fresh situations that fit the actual role. A teacher, nurse, scheduler,
+      and developer need different jokes. Do not force software words on other jobs.
+      Avoid words like microcosm, existential, asynchronous, juxtaposition, paradigm,
+      orchestration, and organizational mystery. If a sentence sounds smart instead
+      of funny, rewrite it with simpler words and a clearer punchline.
+
       PROFESSION-SPECIFIC HUMOR: Use the selected profession together with the person's
       actual resume, not a shared software-engineer joke template. Educator humor can draw
       on lesson plans, grading, classroom routines, or meeting overload when relevant.
