@@ -160,6 +160,8 @@
     sans-serif;
 }
 .uploaded-preview-actions {
+  padding-bottom: calc(0.2in + min(1.5in, 18dvh));
+  padding-right: calc(3mm + min(1in, 10vw));
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -223,6 +225,7 @@
   .uploaded-preview-actions {
     flex-direction: column;
     gap: 4.4px;
+    padding-right: min(5vw, 20px);
   }
   .uploaded-page-grid {
     max-width: 100%;

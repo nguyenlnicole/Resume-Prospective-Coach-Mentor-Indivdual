@@ -1,3 +1,4 @@
+import { visibleReviewFindings } from "./review-findings.js";
 import { demoJobUrl, demoJobTitle, demoJobDescription } from "./demo-job";
 import { addRepositorySkills, newlyListedSkills } from "./repo-skills";
 import ProjectSuggestions from "./ProjectSuggestions";
@@ -3248,11 +3249,7 @@ function App() {
                   </div>
                 </aside>
                 <section className="findings">
-                  {(page === "format"
-                    ? review.formatFindings
-                    : review.contentFindings
-                  )
-                    .filter((finding) => demoMode || finding.status !== "pass")
+                  {visibleReviewFindings(page === "format" ? review.formatFindings : review.contentFindings, demoMode)
                     .map((f, i) => (
                       <article key={i} className={"finding " + f.status}>
                         <div className="finding-icon">
@@ -3279,7 +3276,7 @@ function App() {
                             )}
                           </h3>
                           <p>{briefFeedback(f.evidence)}</p>
-                          {demoMode && f.suggestion && (
+                          {f.suggestion && (
                             <p>
                               <strong>
                                 {f.status === "pass" ? "Keep:" : "Next step:"}
@@ -3333,6 +3330,7 @@ function App() {
                         </div>
                       </article>
                     ))}
+                  {visibleReviewFindings(page === "format" ? review.formatFindings : review.contentFindings).length === 0 && (<p role="status">Feedback for this rating is unavailable in this saved review. Start a new review to receive a complete assessment.</p>)}
                 </section>
               </div>
               <div className="page-actions">
