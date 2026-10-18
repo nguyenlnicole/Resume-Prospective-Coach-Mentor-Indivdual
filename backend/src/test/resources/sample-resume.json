@@ -1,0 +1,18 @@
+{
+  "softwareEngineering": true,
+  "contact": {
+    "name": "Alex Rivera",
+    "location": "San Francisco, CA",
+    "email": "alex@example.com",
+    "phone": "(555) 010-0142",
+    "linkedin": "https://www.linkedin.com/in/example",
+    "github": "https://github.com/example",
+    "portfolio": "https://example.com/portfolio"
+  },
+  "summary": "Software engineer building reliable applications with Java, Spring Boot, React, and PostgreSQL. Owns features from planning through release, investigates production issues, and improves testing practices. Brings a thoughtful approach to collaboration, documentation, and accessible user experiences.",
+  "experience": "Northstar Studio — Software Engineer | 2023–Present\n• Delivered a customer account feature using Java and React, owning API design, implementation, testing, and release with the product team.\n• Investigated recurring synchronization failures and added regression tests to prevent repeat issues in the customer account workflow.\n• Reviewed pull requests and documented setup steps so new teammates could reproduce the development environment and contribute to the codebase.\n\nJuniper Digital — Associate Software Engineer | 2021–2023\n• Built REST endpoints with input validation and consistent error handling for assigned application features in collaboration with the engineering team.\n• Improved mobile navigation and added integration tests for the checkout workflow to verify behavior across supported screen sizes.\n• Used Git and issue tracking to organize assigned work, incorporate code review feedback, and document changes before release.",
+  "skills": "Languages: Java, JavaScript, TypeScript, SQL\nFrameworks: Spring Boot, React\nDatabases: PostgreSQL\nTools & Practices: Git, JUnit, Integration Testing, API Design",
+  "projects": "CareTrack | https://github.com/example/caretrack\nTech: Java, React\nBuilt a care organizer with reminders and validated API endpoints.\n\nReleaseBoard | https://github.com/example/releaseboard\nTech: React, PostgreSQL\nCreated a release tracker with React, PostgreSQL, and integration tests.\n\nQueryLab | https://github.com/example/querylab\nTech: SQL\nBuilt a SQL practice tool with saved queries and input validation.",
+  "education": "Example University — B.S. in Computer Science | Graduated May 2021",
+  "certifications": "Professional Scrum Master I — Scrum.org | 2024"
+}

@@ -1,0 +1,31 @@
+{
+  "name": "pnb-resume-prospective",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --configLoader native --host 127.0.0.1 --mode coach",
+    "build": "vite build --configLoader native",
+    "preview": "vite preview --configLoader native --host 127.0.0.1",
+    "test": "node --test src/*.test.js",
+    "build:coach": "vite build --configLoader native --mode coach --outDir dist-coach",
+    "prebuild": "node check-public-assets.mjs",
+    "prebuild:coach": "node check-public-assets.mjs",
+    "build:beta": "vite build --configLoader native --mode beta --outDir dist-beta",
+    "prebuild:beta": "node check-public-assets.mjs",
+    "dev:individual": "vite --configLoader native --host 127.0.0.1 --mode beta",
+    "build:individual": "vite build --configLoader native --mode beta --outDir dist-beta",
+    "prebuild:individual": "node check-public-assets.mjs"
+  },
+  "dependencies": {
+    "@pdf-lib/fontkit": "^1.1.1",
+    "lucide-react": "^0.468.0",
+    "pdf-lib": "^1.17.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.10",
+    "vite": "^7.1.7"
+  }
+}

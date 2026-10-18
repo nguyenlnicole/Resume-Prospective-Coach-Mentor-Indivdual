@@ -1,0 +1,18 @@
+{
+  "contact": {
+    "name": "Jordan Avery",
+    "location": "Portland, OR",
+    "phone": "(555) 010-0199",
+    "email": "jordan@example.com",
+    "linkedin": "https://www.linkedin.com/in/example",
+    "github": "https://github.com/example",
+    "portfolio": "https://example.com"
+  },
+  "summary": "Lead software engineer specializing in Java, Spring Boot, TypeScript, React, and PostgreSQL. Designs distributed systems, leads cross-team delivery, and mentors engineers through service migrations, testing, performance improvements, and incident analysis, with an emphasis on reliable releases and clear documentation.",
+  "experience": "Cedar Example Labs — Lead Engineer | 2024–Present\n• Designed a scheduling service with validation, access controls, and operational documentation to support implementation and maintainability across the team.\n• Coordinated implementation with product and support teams, reviewed release readiness, and documented decisions before the planned deployment.\n• Added regression coverage for retry handling and documented troubleshooting steps so teammates could investigate the same failure path.\n\nHarbor Example Systems — Senior Engineer | 2021–2024\n• Improved report generation by profiling queries and validating indexes with representative test data before recommending changes to the team.\n• Planned a database upgrade with compatibility checks and a documented rollback procedure to guide implementation and recovery planning.\n• Mentored colleagues through design discussions and code reviews, sharing feedback on implementation choices and maintainable approaches.\n\nMeadow Example Studio\nSoftware Engineer II | 2019–2021\n• Delivered account settings and notification APIs with integration tests and input validation, coordinating the implementation with the development team.\n• Investigated synchronization errors.\n• Added repeatable tests for transaction behavior so the team could check future changes.\nSoftware Engineer | 2017–2019\n• Implemented interface updates with designers and verified keyboard navigation to support the accessibility requirements of the example application.\n• Maintained setup instructions and helped new teammates reproduce development issues during their first contributions to the example application.",
+  "skills": "Languages: Java, JavaScript, TypeScript, SQL\nFrameworks and Databases: Spring Boot, React, PostgreSQL\nTools and Platforms: Git, Docker, JUnit, CI pipelines\nAI Tools and Techniques: Model evaluation, prompt testing",
+  "projects": "Schedule Example | https://github.com/example/schedule — Java, Spring Boot, React, PostgreSQL\nDeveloped a scheduling web application with accessible appointment forms, availability checks, and confirmation records, connecting a React interface to validated Spring Boot endpoints and PostgreSQL.\n\nReport Example | https://github.com/example/reports — Java, Spring Boot, PostgreSQL, JUnit\nBuilt a reporting software application with saved filters and searchable results, adding automated query tests and input validation so users can repeat and compare reports.\n\nLibrary Example | https://github.com/example/library — Java, Spring Boot, React, SQL\nCreated a library web application with catalog search, lending records, and role-based access, connecting the React interface to Java services that track checked-out items. Documented setup steps for contributors.",
+  "education": "Example Institute — B.S. in Computer Science | Graduated May 2017",
+  "certifications": "Example Professional Certification | March 2023",
+  "softwareEngineering": true
+}

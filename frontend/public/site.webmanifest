@@ -1,0 +1,19 @@
+{
+  "id": "/",
+  "name": "PNB Resume Prospective",
+  "short_name": "PNB Resume",
+  "description": "Professional resume reviews and a one-page resume builder for tech professionals.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fbfcff",
+  "theme_color": "#183764",
+  "icons": [
+    {
+      "src": "/pnb-robot-transparent.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

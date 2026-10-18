@@ -1,0 +1,16 @@
+.git
+**/node_modules
+**/target
+**/dist*
+**/data
+**/.env.local
+**/.env.*.local
+**/.*.properties
+**/local.properties
+**/*.log
+**/*.jks
+**/*.keystore
+**/*.pem
+**/*.key
+desktop
+android

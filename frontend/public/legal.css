@@ -1,0 +1,147 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Libre+Caslon+Display&display=swap");
+:root {
+  color-scheme: light;
+  font-family: "DM Sans", Arial, sans-serif;
+  color: #1c304b;
+  background: #f7faff;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #f7faff url("/watercolor-border.png") center / 100% 100% fixed
+    no-repeat;
+}
+a {
+  color: #315d86;
+}
+a:focus-visible {
+  outline: 2px solid #315d86;
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+.legal-shell {
+  width: min(100% - 32px, 770px);
+  margin: 0 auto;
+  padding: 24px 0 34px;
+}
+.legal-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  text-decoration: none;
+  width: fit-content;
+}
+.legal-brand .legal-robot {
+  width: 33px;
+  height: 33px;
+  object-fit: contain;
+}
+.legal-brand .legal-wordmark {
+  width: 146px;
+  height: 59px;
+  object-fit: contain;
+}
+.legal-card {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(24px, 5vw, 42px);
+  border: 1px solid #c9d9ee;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 18px 50px #244e8112;
+}
+.legal-eyebrow {
+  margin: 0 0 4px;
+  color: #517aa6;
+  font:
+    italic 18px/1.2 "Segoe Script",
+    "Brush Script MT",
+    cursive;
+}
+h1,
+h2 {
+  font-family: "Libre Caslon Display", Georgia, serif;
+  font-weight: 400;
+}
+h1 {
+  margin: 0;
+  color: #182849;
+  font-size: clamp(35px, 6vw, 47px);
+}
+.legal-intro {
+  max-width: 55ch;
+  margin: 10px 0 22px;
+  color: #526783;
+  line-height: 1.6;
+}
+.legal-updated {
+  margin: 0 0 24px;
+  color: #6f829d;
+  font-size: 12px;
+}
+.legal-section {
+  padding: 17px 0;
+  border-top: 1px solid #e4ebf5;
+}
+.legal-section h2 {
+  margin: 0 0 7px;
+  font-size: 25px;
+  color: #203c62;
+}
+.legal-section p,
+.legal-section li {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.65;
+}
+.legal-section p + p {
+  margin-top: 9px;
+}
+.legal-section ul {
+  margin: 0;
+  padding-left: 20px;
+}
+.legal-section li + li {
+  margin-top: 5px;
+}
+.legal-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 20px 0 4px;
+  color: #6a829e;
+  font-size: 12px;
+}
+.legal-footer a {
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+.legal-footer a:hover {
+  border-bottom-color: currentColor;
+}
+.legal-footer a[aria-current="page"] {
+  color: #203c62;
+  font-weight: 700;
+}
+@media (max-width: 560px) {
+  body {
+    background-size: cover;
+  }
+  .legal-shell {
+    width: min(100% - 20px, 770px);
+    padding-top: 12px;
+  }
+  .legal-brand .legal-wordmark {
+    width: 126px;
+    height: 51px;
+  }
+  .legal-card {
+    border-radius: 18px;
+  }
+}

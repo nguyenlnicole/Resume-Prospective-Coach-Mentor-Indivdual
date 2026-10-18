@@ -1,0 +1,52 @@
+.faq-card h1 {
+  font-size: clamp(30px, 5.5vw, 42px);
+  line-height: 1.15;
+}
+.faq-card .legal-intro {
+  margin-bottom: 20px;
+}
+.faq-item {
+  border-top: 1px solid #dce6f2;
+}
+.faq-item:last-child {
+  border-bottom: 1px solid #dce6f2;
+}
+.faq-item summary {
+  padding: 18px 0;
+  color: #203c62;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+.faq-item summary::marker {
+  color: #648bb6;
+}
+.faq-item summary:focus-visible {
+  outline: 2px solid #547cad;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+.faq-answer {
+  padding: 0 0 18px 18px;
+}
+.faq-answer p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.faq-help {
+  margin: 22px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #526783;
+}
+@media (max-width: 560px) {
+  .faq-item summary {
+    font-size: 14px;
+    padding-block: 16px;
+  }
+  .faq-answer {
+    padding-left: 0;
+  }
+}

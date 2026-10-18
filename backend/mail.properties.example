@@ -1,0 +1,6 @@
+app.mail-enabled=false
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=sender@example.com
+spring.mail.password=
+app.mail-from=sender@example.com

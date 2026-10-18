@@ -1,0 +1,54 @@
+{
+  "name": "pnb-resume-prospective-desktop",
+  "version": "0.1.0",
+  "description": "PNB Resume Prospective resume review and builder",
+  "author": "PNB Paws LLC",
+  "private": true,
+  "main": "main.cjs",
+  "scripts": {
+    "prepare-ui": "node prepare.cjs",
+    "start": "npm run prepare-ui && electron .",
+    "test": "node --test test/*.test.cjs",
+    "pack": "npm run prepare-ui && electron-builder --dir --publish never",
+    "dist:win": "npm run prepare-ui && electron-builder --win nsis --x64 --publish never",
+    "dist:mac": "npm run prepare-ui && electron-builder --mac dmg --arm64 --x64 --publish never"
+  },
+  "build": {
+    "appId": "com.pnbpaws.resumeprospective",
+    "productName": "PNB Resume Prospective",
+    "directories": {
+      "output": "release",
+      "buildResources": "resources"
+    },
+    "files": [
+      "main.cjs",
+      "transport.cjs",
+      "desktop-config.json",
+      "ui/**/*",
+      "package.json"
+    ],
+    "asar": true,
+    "win": {
+      "target": "nsis",
+      "icon": "resources/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "PNB Resume Prospective"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "resources/icon.png",
+      "category": "public.app-category.productivity"
+    },
+    "artifactName": "PNB-Resume-Prospective-${version}-${os}-${arch}.${ext}"
+  },
+  "devDependencies": {
+    "electron": "44.7.0",
+    "electron-builder": "26.15.3"
+  }
+}
