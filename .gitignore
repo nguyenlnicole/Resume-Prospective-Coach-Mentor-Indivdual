@@ -30,3 +30,4 @@ desktop/ui/
 desktop/resources/
 desktop/release*/
 desktop/desktop-config.json
+/android/
