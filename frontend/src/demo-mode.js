@@ -24,23 +24,12 @@ export async function demoRequest(path, options = {}) {
           .join("\n\n") ||
         "No completed strengths are available for this review yet.",
     };
-  if (path === "/feedback/roast")
-    return {
-      roast: [
-        "You built useful tools, but this resume makes the recruiter do all the project management. Give the big wins some breathing room. They should not need a search party.",
-        "Three projects with example links. Bold choice. That is a restaurant menu that says ‘trust me, I can cook.’ Show us the work.",
-        "Remember: this is a resume, not witness protection for your accomplishments. Stop making the hiring manager identify your best work from a blurry description.",
-      ].join("\n\n"),
-    };
-  if (path === "/feedback/glow-up-roast")
-    return {
-      jokes: [
-        "There you are. Same engineer, clearer story. The first draft made your accomplishments look like they were trying to leave the party without saying goodbye.",
-        "The projects finally have a name, a stack, and a point. They have stopped introducing themselves like three strangers you vaguely remember from a group assignment.",
-        "Remember: you did not need a fictional promotion. You needed your resume to stop acting like it was written by the other candidate.",
-      ],
-    };
-
+  if (path === '/feedback/roast') return { roast: "Your accomplishments are strong enough to stop hiding on page two. You made the hiring manager play hide-and-seek, then put all the good stuff in the one place they might never look.\n\nPut the best parts up front. This is a job application, not a treasure hunt. Nobody should need a map to find out you’re good at your job." };
+  if (path === '/feedback/glow-up-roast') return { jokes: [
+    "Remember when your skills played hide-and-seek in a paragraph? We found them. The hiring manager can finally stop scrolling and go eat lunch.",
+    "Same person, same work, and suddenly your resume looks like it pays its bills on time. Your old layout owes it an apology.",
+    "Now click Apply instead of fixing one comma and saving final_FINAL_really_final. The comma has had enough attention. Go get the interview."
+  ] };
   if (path === "/cover-letter")
     return {
       text:

@@ -1,3 +1,10 @@
+import { demoCreateDetails } from './demo-create-details.js';
+import CreateResume from './CreateResume.jsx';
+import { blankResumeDetails, createResumeError, resumeFromDetails } from './create-resume.js';
+import NewProjectFields from './NewProjectFields.jsx';
+import { newProjectsError, addNewProjects } from './new-projects.js';
+import NewExperienceFields from './NewExperienceFields.jsx';
+import { newExperienceError, removeOldestExperience } from './new-experience.js';
 import { visibleReviewFindings } from "./review-findings.js";
 import { demoJobUrl, demoJobTitle, demoJobDescription } from "./demo-job";
 import { addRepositorySkills, newlyListedSkills } from "./repo-skills";
@@ -25,7 +32,7 @@ import ProjectLinkFields from "./ProjectLinkFields";
 import { resumeImprovementQuestions } from "./resume-improvement-questions";
 import { jobPrepDocumentText, readableJobPrepText } from "./job-prep-document";
 import CoverLetterPreview from "./CoverLetterPreview";
-import { AppSumoRedemption } from "./AppSumo";
+
 import Resume from "./ResumeDocument";
 import { SubscriptionRequest } from "./Accounts";
 import { AboutButton, AboutDialog, HowButton } from "./AboutUs";
@@ -35,6 +42,7 @@ import { resumeExampleFor } from "./resume-examples.js";
 import React, { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
+  Folder,
   Upload,
   PawPrint,
   FileText,
@@ -721,6 +729,7 @@ function ExperienceRatingPanel({ onSubmitted, submitted, beta }) {
 }
 
 function App() {
+  const [createDetails, setCreateDetails] = useState(blankResumeDetails);
   const restoringWorkflow = useRef(false);
   const [progressBusy, setProgressBusy] = useState(false);
   const [savedProgress, setSavedProgress] = useState(null);
@@ -779,6 +788,8 @@ function App() {
     [selectedExperience, setSelectedExperience] = useState(null),
     [bulletChoices, setBulletChoices] = useState({}),
     [roleDetails, setRoleDetails] = useState({}),
+    [newExperience, setNewExperience] = useState({}),
+    [newProjects, setNewProjects] = useState([]),
     [selectedProjects, setSelectedProjects] = useState(null),
     [projectStacks, setProjectStacks] = useState({}),
     [repoChecks, setRepoChecks] = useState({}),
@@ -944,6 +955,7 @@ function App() {
   }, [page, profession, level, access.role, file, error]);
   useEffect(() => {
     if (!access.allowed && !demoMode) {
+      setCreateDetails(blankResumeDetails());
       setFile(null);
       setReview(null);
       setFeedbackDetails({});
@@ -957,7 +969,7 @@ function App() {
       setResume(clone(demoMode ? demoResume : referenceResume));
       setAiResume(null);
       setAiError("");
-      setAnswers({});
+      setAnswers({}); setNewExperience({}); setNewProjects([]);
       setProfileLinkedin("");
       setProfileGithub("");
       setProfilePortfolio("");
@@ -1029,6 +1041,7 @@ function App() {
         return true;
       }
       const previous = {
+        "create-resume": "home",
         "upload-preview": "home",
         format: "home",
         overall: "format",
@@ -1321,9 +1334,36 @@ function App() {
       certifications: "",
     });
     setProposal(null);
-    setAnswers({});
+    setAnswers({}); setNewExperience({}); setNewProjects([]);
     setProgressMessage("");
     setProgressError("");
+  }
+  async function createFromScratch() {
+    for (let step = 0; step < 3; step++) {
+      const issue = createResumeError(createDetails, step);
+      if (issue) { setError(issue); setCreateDetails(current => ({...current, step})); return; }
+    }
+    setBusy(true); setError("");
+    try {
+      const selected = createDetails.profession === "Technical" ? createDetails.level : createDetails.profession;
+      const initialResume = resumeFromDetails(createDetails);
+      const result = demo ? {resume: initialResume, level: selected, questions: [], sample: true}
+        : await post("/resume/create", {resume: initialResume, level: selected, email: createDetails.email.trim(), consent: createDetails.consent});
+      setFile(null); setReview(result); setResume(clone(result.resume)); setEmail(createDetails.email.trim());
+      setProfession(createDetails.profession); setLevel(createDetails.level);
+      setProposal(null); setProposalApproved(false); setAiResume(null); setAiSource(null); setLayout(null);
+      setAnswers({}); setNewExperience({}); setNewProjects([]); setCodingChoice(null);
+      setSelectedExperience(null); setBulletChoices({}); setRoleDetails({}); setSelectedProjects(null);
+      setProjectLinks({}); setProjectStacks({}); setRepoChecks({}); setPreferences([]);
+      setTargetRole(""); setJobDescription(""); setJobLink(""); setJobPrep(null);
+      setProfileLinkedin(""); setProfileGithub(""); setProfilePortfolio(""); setProjectDemoUrl("");
+      setGeneralFocus(""); setOtherGeneralFocus(""); setGeneralService(""); setGeneralProblemSolving(""); setGeneralPracticalSkills(""); setGeneralVolunteerWork("");
+      setMedicalRoleType(""); setMedicalCredentials(""); setMedicalSystems(""); setMedicalExperience("");
+      setWantCoverLetter(false); setCoverLetter(""); setFont(defaultResumeFont(createDetails.profession)); setDates("right");
+      if (!demo) { await refreshAccess(); await post("/builder/start", {}); }
+      go("preferences");
+    } catch (error) { setError(error.message); }
+    finally { setBusy(false); }
   }
   async function analyze(sample = demoMode) {
     setError("");
@@ -1379,7 +1419,7 @@ function App() {
       setWantCoverLetter(demoMode);
       setCoverLetter("");
       setResume(clone(result.resume));
-      setAnswers({});
+      setAnswers({}); setNewExperience({}); setNewProjects([]);
       setProfileLinkedin(result.resume?.contact?.linkedin || "");
       setProfileGithub(result.resume?.contact?.github || "");
       setProjectDemoUrl("");
@@ -1590,6 +1630,10 @@ function App() {
     }
   }
   async function build() {
+    const projectError = technicalOptions ? newProjectsError(newProjects) : "";
+    if (projectError) { setError(projectError); return; }
+    const experienceError = newExperienceError(newExperience);
+    if (experienceError) { setError(experienceError); return; }
     setBusy(true);
     setError("");
     setProposal(null);
@@ -1642,6 +1686,13 @@ function App() {
               : entry;
         })
         .join("\n\n");
+      if (newExperience.enabled && newExperience.replaceOldest !== false) {
+        const before = experienceList(chosenResume.experience);
+        chosenResume.experience = removeOldestExperience(chosenResume.experience);
+        const after = experienceList(chosenResume.experience);
+        const remapped = combineExperience.map(index => after.indexOf(before[index])).filter(index => index >= 0);
+        combineExperience.splice(0, combineExperience.length, ...remapped);
+      }
       const projectIndexes =
         coding && projectOptions.length > 3
           ? keptProjects
@@ -1660,6 +1711,7 @@ function App() {
             : project;
         })
         .join("\n\n");
+      if (technicalOptions) chosenResume.projects = addNewProjects(chosenResume.projects, newProjects);
       const repoResults = demo
         ? []
         : await Promise.allSettled(
@@ -1693,6 +1745,11 @@ function App() {
         };
         if (answers.outcome?.trim() && answers.outcome !== "Not sure")
           next.experience += "\n• " + answers.outcome.trim();
+        if (newExperience.enabled) {
+          const month = value => new Date(`${value}-01T12:00:00`).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+          const heading = `${newExperience.employer} — ${newExperience.role} | ${month(newExperience.start)} – ${newExperience.current ? 'Present' : month(newExperience.end)}`;
+          next.experience = `${heading}\n• ${newExperience.description.trim()}\n\n${next.experience}`;
+        }
         setResume(normalizeResume(next));
       } else {
         const data = await post("/build", {
@@ -1716,6 +1773,8 @@ function App() {
             ]),
           ),
           combineExperience,
+          newExperience,
+          newProjects: technicalOptions ? newProjects : [],
         });
         await refreshAccess();
         const normalized = {
@@ -2067,6 +2126,7 @@ function App() {
     }
     setLinkWarning([]);
     if (jobDescription.trim()) makeJobPrep();
+    if (demoMode) setAnswers(current => ({ improve_certifications: "Sample certification: AWS Certified Cloud Practitioner — Amazon Web Services. In progress; exam planned for December 2026.", ...current }));
     go("questions");
   }
   async function autofillProjectLinks() {
@@ -2235,7 +2295,7 @@ function App() {
       active = false;
     };
   }, [access.allowed, access.email]);
-  const workflowSnapshot = JSON.stringify({
+  const workflowSnapshot = JSON.stringify({ createDetails,
     version: 1,
     page,
     email,
@@ -2262,7 +2322,7 @@ function App() {
     jobPrep,
     selectedExperience,
     bulletChoices,
-    roleDetails,
+    roleDetails, newExperience, newProjects,
     selectedProjects,
     projectStacks,
     projectLinks,
@@ -2294,7 +2354,7 @@ function App() {
     !demo &&
     access.allowed &&
     [
-      "home",
+      "create-resume", "home",
       "upload-preview",
       "format",
       "overall",
@@ -2486,6 +2546,8 @@ function App() {
         setSelectedExperience(saved.selectedExperience);
       if (Object.hasOwn(saved, "bulletChoices"))
         setBulletChoices(saved.bulletChoices);
+      setNewExperience(saved.newExperience || {});
+      setNewProjects(saved.newProjects || []);
       if (Object.hasOwn(saved, "roleDetails"))
         setRoleDetails(saved.roleDetails);
       if (Object.hasOwn(saved, "selectedProjects"))
@@ -2542,6 +2604,7 @@ function App() {
       setError("");
       setEditSection(null);
       setModal(null);
+      setCreateDetails(saved.createDetails || blankResumeDetails());
       go(saved.page === "upload-preview" && !result.file ? "home" : saved.page);
       setProgressMessage("Your saved progress is ready.");
     } catch (error) {
@@ -2647,9 +2710,7 @@ function App() {
         </div>
       )}
       <div className="app-shell">
-        {!betaEdition && (
-          <AppSumoRedemption access={access} refresh={refreshAccess} />
-        )}
+
         <SubscriptionRequest
           individual={betaEdition}
           access={access}
@@ -2667,7 +2728,7 @@ function App() {
                   : "Technical",
               );
               setProposal(saved.build || null);
-              setAnswers({});
+              setAnswers({}); setNewExperience({}); setNewProjects([]);
               setProjectLinks({});
               setProjectStacks({});
               setLayout(null);
@@ -2792,6 +2853,7 @@ function App() {
               </div>
             </aside>
           )}
+          {page === "create-resume" && <CreateResume value={createDetails} onChange={setCreateDetails} onContinue={createFromScratch} onBack={() => go("home")} busy={busy} error={error} />}
           {page === "home" && (
             <>
               <header className="hero">
@@ -2801,6 +2863,12 @@ function App() {
                 </p>
                 <Divider />
               </header>
+              {demoMode && <section className="demo-entry-paths" aria-label="Choose a demo path">
+                <div className="demo-path-heading"><h2>Two ways to start your resume</h2><p>Try either path with sample information. No upload, email, or paid AI request is needed.</p></div>
+                <article><h3>Already have a resume?</h3><p><strong>Preview My Resume</strong> takes you to a document preview, then ratings and feedback before you improve it.</p><p>To try this path, select Preview My Resume below.</p></article>
+                <article><h3>Starting from scratch?</h3><p><strong>Create a resume</strong> starts with your profession, then experience, education, skills, and languages.</p><p>To try this path, select Create a resume below.</p></article>
+                <p className="demo-path-footer">Both paths lead to editing and choosing your finished resume.</p>
+              </section>}
               {access.role === "coach" &&
                 access.accessKind !== "beta-pass" &&
                 !betaEdition && (
@@ -2811,7 +2879,7 @@ function App() {
                         setResume(clone(data.review.resume));
                         setEmail(data.reviewUserEmail);
                         setLevel(data.reviewedLevel);
-                        setAnswers({});
+                        setAnswers({}); setNewExperience({}); setNewProjects([]);
                         setProjectLinks({});
                         setProjectStacks({});
                         setRoleDetails({});
@@ -2967,18 +3035,7 @@ function App() {
                     onChange={(e) => setConsent(e.target.checked)}
                   />
                   <span>
-                    I agree to external processing of this resume and to
-                    emailing the app owner the resume user’s email and scores.
-                    If I start the builder, the owner will be notified.
-                    {coachEdition &&
-                      " In the coach and beta versions, the owner also receives the uploaded resume, AI feedback, builder draft, and selected finished resume."}{" "}
-                    <button
-                      className="text-button"
-                      type="button"
-                      onClick={() => setModal("privacy")}
-                    >
-                      How my data is handled
-                    </button>
+                    Your resume data will be deleted unless you ask us to save it.
                   </span>
                 </label>
                 {error && <Notice error>{error}</Notice>}
@@ -2994,6 +3051,10 @@ function App() {
                 </button>
               </form>
               <section className="ratings-intro">
+              <div className="create-resume-entry">
+                <button className="coach-recent-toggle create-resume-button" type="button" onClick={() => { setError(""); setCreateDetails(current => demoMode && !current.first ? demoCreateDetails() : {...current, email: current.email || email}); go("create-resume"); }}><Folder size={18} aria-hidden="true" />Create a resume</button>
+              </div>
+
                 <h2>Two scores. One clear next step.</h2>
                 <div className="rating-tiles">
                   <article className="rating-tile">
@@ -3018,17 +3079,7 @@ function App() {
                   </article>
                 </div>
               </section>
-              <div className="home-bottom">
-                {!coachEdition && (
-                  <div className="home-help">
-                    <Mail size={22} aria-hidden="true" />
-                    <span>
-                      Need another look? Ask a human for a personal review and
-                      edits.
-                    </span>
-                  </div>
-                )}
-              </div>
+
             </>
           )}
           {page === "grading" && (
@@ -4841,6 +4892,8 @@ function App() {
                   build();
                 }}
               >
+              {technicalOptions && <NewProjectFields value={newProjects} onChange={setNewProjects} />}
+              <NewExperienceFields value={newExperience} onChange={setNewExperience} hasExperience={experienceOptions.length > 0} />
                 {projectOptions
                   .map((project, index) => ({ project, index }))
                   .filter(
@@ -5617,7 +5670,7 @@ function App() {
               setEmailTo("");
               setProfession("");
               setLevel("");
-              setAnswers({});
+              setAnswers({}); setNewExperience({}); setNewProjects([]);
               setPreferences([]);
               setTargetRole(demoMode ? demoJobTitle : "");
               setSelectedExperience(null);

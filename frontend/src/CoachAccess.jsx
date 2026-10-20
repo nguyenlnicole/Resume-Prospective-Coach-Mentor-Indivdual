@@ -1,4 +1,4 @@
-import { AppSumoRedemption } from "./AppSumo";
+
 import { AccountEntry, SubscriptionRequest } from "./Accounts";
 import { AboutButton, HowButton } from "./AboutUs";
 import React, { useEffect, useState } from "react";
@@ -147,7 +147,7 @@ export function CoachSignIn({
           <AccountEntry individual={betaHost} refresh={refresh} />
           <HowButton className="signin-how-control" onClick={onHowItWorks} />
         </div>
-        {!betaHost && <AppSumoRedemption access={access} refresh={refresh} />}
+
         <SubscriptionRequest
           individual={betaHost}
           access={access}

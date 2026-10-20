@@ -150,14 +150,17 @@ class ApiController {
       @RequestParam boolean consent,
       HttpServletRequest req)
       throws Exception {
+    return reviewBytes(file.getBytes(), file.getOriginalFilename(), level, email, consent, req);
+  }
+
+  private JsonNode reviewBytes(byte[] uploadedBytes, String filename, String level, String email, boolean consent, HttpServletRequest req) throws Exception {
     if (!consent)
       throw new ResponseStatusException(BAD_REQUEST, "Confirm external resume processing before submitting.");
     level(level);
     if (!AdminService.validEmail(email))
       throw new ResponseStatusException(BAD_REQUEST, "Enter a valid resume user email.");
     admin.limit("review:" + req.getRemoteAddr(), 6);
-    byte[] uploadedBytes = file.getBytes();
-    JsonNode result = accounts.runTrial(req.getSession(), "review", level, email.trim(), () -> ai.review(uploads.extract(file.getOriginalFilename(), uploadedBytes), level));
+    JsonNode result = accounts.runTrial(req.getSession(), "review", level, email.trim(), () -> ai.review(uploads.extract(filename, uploadedBytes), level));
     req.getSession().setAttribute("reviewedLevel", level);
     req.getSession().setAttribute("reviewUserEmail", email.trim());
     req.getSession().setAttribute("reviewResult", result);
@@ -172,10 +175,10 @@ class ApiController {
       String firstName = result.path("resume").path("contact").path("name").asText("");
       byte[] feedback = feedbackPdf.create(result, level);
       String id = coachHistory.saveReview(coachEmail, email.trim(), firstName,
-          file.getOriginalFilename(), uploadedBytes, feedback);
+          filename, uploadedBytes, feedback);
       req.getSession().setAttribute("coachHistoryId", id);
       ((com.fasterxml.jackson.databind.node.ObjectNode) result).put("historyId", id);
-      ownerNotifications.coachReview(email.trim(), coachEmail, file.getOriginalFilename(),
+      ownerNotifications.coachReview(email.trim(), coachEmail, filename,
           uploadedBytes, feedback);
     }
     req.getSession().removeAttribute("builderStartNotified");
@@ -193,9 +196,24 @@ class ApiController {
         result.path("historyId").asText(), result, level, email.trim(), req.getSession());
     ownerNotifications.reviewed(email.trim(), coachEmail, level, formatRating, overallRating);
     if ("beta-pass".equals(account.get("accessKind")))
-      ownerNotifications.betaOriginal(email.trim(), file.getOriginalFilename(), uploadedBytes,
+      ownerNotifications.betaOriginal(email.trim(), filename, uploadedBytes,
           feedbackPdf.create(result, level));
     return result;
+  }
+
+  record CreateResumeInput(JsonNode resume, String level, String email, boolean consent) {}
+
+  @PostMapping("/resume/create")
+  JsonNode createResume(@RequestBody CreateResumeInput input, HttpServletRequest req) throws Exception {
+    level(input.level());
+    if (!input.consent() || !AdminService.validEmail(input.email()))
+      throw new ResponseStatusException(BAD_REQUEST, "Enter a valid email and confirm external processing.");
+    if (input.resume() == null || !input.resume().isObject() || input.resume().toString().length() > 25000
+        || input.resume().path("contact").path("name").asText().isBlank())
+      throw new ResponseStatusException(BAD_REQUEST, "Complete your name and keep your resume details under 25,000 characters.");
+    admin.limit("create-resume:" + req.getRemoteAddr(), 6);
+    byte[] document = pdf.create(input.resume(), input.level(), "Calibri", "right", "blue");
+    return reviewBytes(document, "New-Resume.pdf", input.level(), input.email(), input.consent(), req);
   }
 
   @PostMapping("/review/email-feedback")

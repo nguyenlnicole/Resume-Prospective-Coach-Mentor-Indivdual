@@ -13,7 +13,7 @@ import static org.springframework.http.HttpStatus.*;
 
 @Service
 class WorkflowDrafts {
-  static final Set<String> PAGES = Set.of("home", "format", "overall", "invitation", "preferences", "questions", "approval", "edit", "layout", "complete", "experience-feedback", "upload-preview");
+  static final Set<String> PAGES = Set.of("create-resume", "home", "format", "overall", "invitation", "preferences", "questions", "approval", "edit", "layout", "complete", "experience-feedback", "upload-preview");
   static final List<String> CONTEXT = List.of("reviewedLevel", "reviewUserEmail", "reviewResult", "reviewCoachEmail", "coachHistoryId", "reviewFormatRating", "reviewOverallRating", "builderStartNotified");
   private final JdbcTemplate db;
   private final ObjectMapper mapper;
