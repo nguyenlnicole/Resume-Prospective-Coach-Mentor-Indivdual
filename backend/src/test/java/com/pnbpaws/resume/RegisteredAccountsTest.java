@@ -22,7 +22,7 @@ class RegisteredAccountsTest {
   assertEquals(1,db.queryForObject("SELECT COUNT(*) FROM registered_account WHERE email=?",Integer.class,email));
   assertEquals(false,accounts.state(email).get("allowed"));
   accounts.verified(email);assertEquals(true,accounts.state(email).get("allowed"));
-  assertThrows(ResponseStatusException.class,()->accounts.startTrial(email,"coach"));
+  assertDoesNotThrow(()->accounts.startTrial(email,"coach"));
  }
  @Test void passwordRules(){assertTrue(RegisteredAccounts.validPassword("Resume12!"));assertFalse(RegisteredAccounts.validPassword("Ab12!"));assertFalse(RegisteredAccounts.validPassword("Resume1!"));assertFalse(RegisteredAccounts.validPassword("Resume123"));}
  @Test void trialEmailAndCreditSurviveDatabaseReopen(@org.junit.jupiter.api.io.TempDir java.nio.file.Path directory)throws Exception{
@@ -39,7 +39,7 @@ class RegisteredAccountsTest {
   var after=new RegisteredAccounts(reopened,admin,mail,Clock.systemUTC(),mapper);
   assertEquals(true,after.state(email).get("reviewUsed"));
   assertEquals(1,after.state(email).get("reviewsRemaining"));
-  assertThrows(ResponseStatusException.class,()->after.startTrial(email,"individual"));
+  assertDoesNotThrow(()->after.startTrial(email,"individual"));
   assertEquals(true,((com.fasterxml.jackson.databind.JsonNode)after.restore(session).get("review")).path("saved").asBoolean());
   reopened.execute("SHUTDOWN");
  }
@@ -54,7 +54,7 @@ class RegisteredAccountsTest {
  @Test void trialNeedsCodeButNoApprovalAndCannotRepeatAcrossEditions()throws Exception{
   String email="trial@example.com";accounts.startTrial(email,"coach");assertEquals(false,accounts.state(email).get("allowed"));
   accounts.verified(email);assertEquals(true,accounts.state(email).get("allowed"));assertFalse(accounts.matches(email,""));
-  assertThrows(ResponseStatusException.class,()->accounts.startTrial(email,"individual"));
+  assertDoesNotThrow(()->accounts.startTrial(email,"individual"));
   var session=new MockHttpSession();session.setAttribute("coachEmail",email);
   var result=mapper.createObjectNode().put("ok",true);
   assertEquals(result,accounts.runTrial(session,"review","Senior",email,()->result));
@@ -94,7 +94,7 @@ class RegisteredAccountsTest {
   assertTrue(migrated.matches(email,"Resume12!"));
   assertEquals(1,migrated.state(email).get("reviewsRemaining"));
   assertEquals(1,migrated.state(email).get("buildsRemaining"));
-  assertThrows(ResponseStatusException.class,()->migrated.startTrial(email,"individual"));
+  assertDoesNotThrow(()->migrated.startTrial(email,"individual"));
   var otherDevice=new MockHttpSession();otherDevice.setAttribute("coachEmail",email);
   migrated.runTrial(otherDevice,"review","Senior",email,()->mapper.createObjectNode());
   var restarted=new RegisteredAccounts(db,admin,mail,Clock.systemUTC(),mapper);

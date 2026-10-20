@@ -26,9 +26,9 @@ export async function demoRequest(path, options = {}) {
     };
   if (path === '/feedback/roast') return { roast: "Your accomplishments are strong enough to stop hiding on page two. You made the hiring manager play hide-and-seek, then put all the good stuff in the one place they might never look.\n\nPut the best parts up front. This is a job application, not a treasure hunt. Nobody should need a map to find out you’re good at your job." };
   if (path === '/feedback/glow-up-roast') return { jokes: [
-    "Remember when your skills played hide-and-seek in a paragraph? We found them. The hiring manager can finally stop scrolling and go eat lunch.",
-    "Same person, same work, and suddenly your resume looks like it pays its bills on time. Your old layout owes it an apology.",
-    "Now click Apply instead of fixing one comma and saving final_FINAL_really_final. The comma has had enough attention. Go get the interview."
+    "Remember when your resume looked like five people worked on it and nobody spoke to each other? Now the fonts finally agreed to be coworkers.",
+    "Your old sentences needed their own lunch break. Now they get to the point before the hiring manager starts checking what is in the fridge.",
+    "Same experience, cleaner resume. You went from a document that says my printer gave up to one that looks like it might actually get paid."
   ] };
   if (path === "/cover-letter")
     return {

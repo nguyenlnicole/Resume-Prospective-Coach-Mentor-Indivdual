@@ -45,12 +45,26 @@ class AccountFlowIntegrationTest {
   String code=mail.codes.get(email);
   send(c,"/coach/verify",Map.of("email",email,"code"," "+code+" ","edition","beta")).andExpect(status().isOk()).andExpect(jsonPath("$.allowed").value(true)).andExpect(jsonPath("$.plan").value("trial"));
   send(c,"/coach/verify",Map.of("email",email,"code",code,"edition","coach")).andExpect(status().isUnauthorized());
-  send(c,"/accounts/trial",Map.of("email",email,"edition","individual")).andExpect(status().isConflict());
+  send(c,"/accounts/trial",Map.of("email",email,"edition","individual")).andExpect(status().isOk());
   mvc.perform(get("/api/admin/accounts").session(c.session())).andExpect(status().isForbidden());
   accounts.runTrial(c.session(),"review","Senior",email,()->mapper.createObjectNode().put("saved",true));
   send(c,"/accounts/restore",Map.of()).andExpect(status().isOk()).andExpect(jsonPath("$.review.saved").value(true));
   send(c,"/accounts/subscribe",Map.of()).andExpect(status().isOk());
   assertEquals("trial",accounts.state(email).get("plan"));
+ }
+ @Test void returningTrialGetsFreshCodeWithoutRefillingCredits()throws Exception{
+  String email="second-trial@example.com";
+  var first=client();
+  send(first,"/accounts/trial",Map.of("email",email,"edition","individual")).andExpect(status().isOk());
+  send(first,"/coach/verify",Map.of("email",email,"code",mail.codes.get(email),"edition","beta")).andExpect(status().isOk());
+  accounts.runTrial(first.session(),"review","Senior",email,()->mapper.createObjectNode());
+  var second=client();
+  send(second,"/accounts/trial",Map.of("email",email,"edition","coach")).andExpect(status().isOk());
+  send(second,"/coach/verify",Map.of("email",email,"code",mail.codes.get(email),"edition","coach")).andExpect(status().isOk()).andExpect(jsonPath("$.reviewsRemaining").value(1));
+  accounts.runTrial(second.session(),"review","Senior",email,()->mapper.createObjectNode());
+  assertEquals(0,accounts.state(email).get("reviewsRemaining"));
+  send(second,"/accounts/trial",Map.of("email",email,"edition","coach")).andExpect(status().isOk());
+  assertThrows(org.springframework.web.server.ResponseStatusException.class,()->accounts.runTrial(second.session(),"review","Senior",email,()->mapper.createObjectNode()));
  }
  @Test void signupNeedsCodeAndOwnerApprovalThenAllowsPasswordLogin()throws Exception{
   var c=client();String email="signup-flow@example.com";
@@ -63,7 +77,7 @@ class AccountFlowIntegrationTest {
   var login=client();
   send(login,"/accounts/login",Map.of("email",email,"password","Resume12!")).andExpect(status().isOk()).andExpect(jsonPath("$.allowed").value(true)).andExpect(jsonPath("$.plan").value("subscribed"));
  }
- @Test void ownerCanResetTrialButDeletedAccountStaysBlocked()throws Exception{
+ @Test void ownerCanDeleteAndResetEmailWithoutBlockingIt()throws Exception{
   var trial=client();String email="reset-flow@example.com";
   send(trial,"/accounts/trial",Map.of("email",email,"edition","coach")).andExpect(status().isOk());
   send(trial,"/coach/verify",Map.of("email",email,"code",mail.codes.get(email),"edition","coach")).andExpect(status().isOk());
@@ -77,9 +91,10 @@ class AccountFlowIntegrationTest {
   trial=client();
   send(trial,"/accounts/trial",Map.of("email",email,"edition","individual")).andExpect(status().isOk());
   mvc.perform(post("/api/admin/accounts/delete").session(owner.session()).header("X-CSRF-TOKEN",owner.csrf()).contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(Map.of("email",email,"confirmation",email,"resetTrial",false)))).andExpect(status().isOk());
-  send(trial,"/accounts/trial",Map.of("email",email,"edition","coach")).andExpect(status().isConflict());
-  send(trial,"/coach/code",Map.of("email",email)).andExpect(status().isForbidden());
-  assertTrue(accounts.deleted(email));
+  assertFalse(accounts.exists(email));
+  send(trial,"/accounts/trial",Map.of("email",email,"edition","coach")).andExpect(status().isOk());
+  assertEquals(2,accounts.state(email).get("reviewsRemaining"));
+  assertFalse(accounts.deleted(email));
   assertThrows(org.springframework.web.server.ResponseStatusException.class,()->accounts.decide(email,"subscribed"));
  }
  @Test void passwordResetIsSingleUseAndPreservesApproval()throws Exception{

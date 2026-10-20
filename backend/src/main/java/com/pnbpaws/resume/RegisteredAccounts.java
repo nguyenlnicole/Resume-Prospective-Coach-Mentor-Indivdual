@@ -96,7 +96,7 @@ class RegisteredAccounts {
   void startTrial(String email,String edition) {
     if(!List.of("coach","individual").contains(edition)) throw new ResponseStatusException(BAD_REQUEST,"Choose a valid account type.");
     var existing=state(email);
-    if(existing!=null && "trial".equals(existing.get("plan")) && "verify-email".equals(existing.get("state")))return;
+    if(existing!=null && "trial".equals(existing.get("plan")))return;
     if(email.equals(admin.email()) || db.queryForObject("SELECT COUNT(*) FROM coach WHERE email=?",Integer.class,email)>0 || exists(email))
       throw new ResponseStatusException(CONFLICT,"This email already has an account or trial. Log in with an email code to continue it.");
     try { db.update("INSERT INTO registered_account(email,password_hash,edition,approval,created) VALUES(?,'',?,'trial',?)",email,edition,clock.millis()); }
@@ -163,15 +163,8 @@ class RegisteredAccounts {
     var row=rows.getFirst();
     if("running".equals(row.get("REVIEW_STATE")) || "running".equals(row.get("BUILD_STATE")))
       throw new ResponseStatusException(CONFLICT,"Wait for the current review or build to finish.");
-    if(resetTrial) {
-      if(!"trial".equals(row.get("APPROVAL")) || !row.get("PASSWORD_HASH").toString().isBlank())
-        throw new ResponseStatusException(CONFLICT,"Only a free trial without a created account can be reset.");
-      db.update("DELETE FROM registered_account WHERE email=?",email);
-      db.update("DELETE FROM coach WHERE email=?",email);
-    } else {
-      db.update("UPDATE registered_account SET approval='deleted',password_hash='',verified=FALSE,subscription_requested=FALSE,trial_notice_pending=FALSE,review_payload=NULL,build_payload=NULL,resume_email=NULL WHERE email=?",email);
-      db.update("UPDATE coach SET status='revoked',session_hash=NULL WHERE email=?",email);
-    }
+    db.update("DELETE FROM registered_account WHERE email=?",email);
+    db.update("DELETE FROM coach WHERE email=?",email);
     db.update("DELETE FROM coach_code WHERE email=?",email);
     db.update("DELETE FROM account_password_reset WHERE email=?",email);
     db.update("DELETE FROM coach_saved_review WHERE owner=?",email);

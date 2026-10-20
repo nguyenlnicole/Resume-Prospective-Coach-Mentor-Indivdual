@@ -5428,6 +5428,14 @@ function App() {
                       <CheckCheck size={29} />
                     </div>
                     <h2>Send or download</h2>
+                    {(!coachEdition || betaEdition) && (
+                      <Button secondary className="resume-help-button" onClick={() => openDelivery("human")}>
+                        <Mail size={16} />
+                        {betaEdition
+                          ? "Request Resume Help"
+                          : "Ask a Human for Help"}
+                      </Button>
+                    )}
                     {(!demo || demoMode) && (
                       <div className="finished-document-tools">
                         <Button
@@ -5447,14 +5455,7 @@ function App() {
                     >
                       <img src="/email-button.png" alt="" />
                     </button>
-                    {(!coachEdition || betaEdition) && (
-                      <Button secondary onClick={() => openDelivery("human")}>
-                        <UserRound size={18} />
-                        {betaEdition
-                          ? "Request Resume Help"
-                          : "Ask a Human for Help"}
-                      </Button>
-                    )}
+
                     <button
                       type="button"
                       className="roast-image-button download-image-button"
