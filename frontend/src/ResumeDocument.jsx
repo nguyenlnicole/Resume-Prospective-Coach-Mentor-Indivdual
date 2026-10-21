@@ -135,6 +135,8 @@ export default function ResumeDocument({
   dates = "right",
 }) {
   const r = normalizeResume(resume);
+  const selectedFont = font || defaultResumeFont(level);
+  const fontFamily = ["Calibri", "Arial", "Aptos"].includes(selectedFont) ? `"${selectedFont}", Arial, sans-serif` : `"${selectedFont}", serif`;
   const nontechnical = [
     "General",
     "Normal",
@@ -147,7 +149,7 @@ export default function ResumeDocument({
       aria-label="Resume preview"
       data-profession={nontechnical ? "nontechnical" : "technical"}
       style={{
-        "--resume-font": `"${font || defaultResumeFont(level)}", serif`,
+        "--resume-font": fontFamily,
         "--resume-link-color": linkColor === "dark" ? "#23476A" : "#0000EE",
       }}
     >

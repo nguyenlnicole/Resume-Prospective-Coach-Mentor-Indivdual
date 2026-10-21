@@ -4524,7 +4524,7 @@ function App() {
                   profile={profileGithub}
                   projects={projectOptions}
                   target={`${targetRole} ${jobDescription}`}
-                  disabled={demo || !coding}
+                  disabled={demo} selected={newProjects} onAdd={project => setNewProjects(current => current.some(item => item.repo === project.repo) ? current : [...current, project])}
                 />
               )}
               {technicalOptions && projectOptions.length > 0 && (
