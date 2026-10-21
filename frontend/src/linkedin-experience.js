@@ -15,3 +15,12 @@ export function parseLinkedinExperience(text) {
     return {role:lines[item.index-2],employer:lines[item.index-1].split(/\s+[·•]\s+/)[0],start:month(item.match[1]),end:month(item.match[2]),current:/^(present|current)$/i.test(item.match[2]),description:lines.slice(item.index+1,end).join('\n'),enabled:true,replaceOldest:false};
   });
 }
+
+export async function linkedinExperienceSource(text, profileUrl, readProfile) {
+  const input = text.trim();
+  const link = linkedinProfileUrl(input || profileUrl);
+  if (link) return (await readProfile(link)).text || '';
+  if (!input || /^https?:\/\/\S+$/i.test(input))
+    throw Error('Enter a LinkedIn profile URL, or paste the job titles, employers, dates, and descriptions from Experience.');
+  return input;
+}

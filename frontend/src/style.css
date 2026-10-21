@@ -723,7 +723,7 @@ footer strong {
   border: 2px solid #deebf5;
   border-top-color: #4585bc;
   border-radius: 50%;
-  animation: none;
+  animation: spin 1.4s linear infinite;
 }
 .grading-steps {
   max-width: 308px;

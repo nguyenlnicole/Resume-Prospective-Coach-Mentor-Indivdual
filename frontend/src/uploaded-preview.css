@@ -334,3 +334,8 @@
   .uploaded-preview-actions > div { flex-direction: column; }
   .uploaded-word-preview, .uploaded-preview-status { grid-column: 1; grid-row: 2; }
 }
+
+.uploaded-preview-actions { flex-direction: column; }
+.uploaded-preview-actions > .uploaded-review-actions { flex-direction: column; }
+.uploaded-preview-actions > .uploaded-review-actions .button { flex: 0 0 auto; }
+.uploaded-preview-actions > p { text-align: center; }

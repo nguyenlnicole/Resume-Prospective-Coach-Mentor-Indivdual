@@ -6,6 +6,9 @@ export function newExperienceError(value) {
   if (!value.role?.trim() || !value.employer?.trim()) return 'Enter the role and employer or organization.';
   if (!value.description?.trim()) return 'Add a few words about your work so we can write accurate bullet points.';
   if (!completeMonth(value.start) || (!value.current && !completeMonth(value.end))) return 'Enter a start date and either an end date or select that you still work there.';
+  const today = new Date();
+  const currentMonth = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`;
+  if (value.start > currentMonth || (!value.current && value.end > currentMonth)) return 'Experience dates cannot be in the future.';
   if (!value.current && value.end < value.start) return 'The end date must be on or after the start date.';
   return value.secondRole?.enabled ? newExperienceError(value.secondRole) : '';
 }

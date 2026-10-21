@@ -169,24 +169,11 @@ export default function UploadedResumePreview({
         </div>
       )}
       <footer className="uploaded-preview-actions">
-        <p>
-          {textPreview
-            ? "Check the extracted text before starting your ratings."
-            : "Check every page before starting your ratings."}
-        </p>
         <div className="uploaded-review-actions">
-          <button type="button" className="secondary button" onClick={onBack}>
-            Choose Another File
-          </button>
-          <button
-            type="button"
-            className="primary button"
-            disabled={!preview}
-            onClick={onReview}
-          >
-            Rate My Resume
-          </button>
+          <button type="button" className="primary button" disabled={!preview} onClick={onReview}>Rate My Resume</button>
+          <button type="button" className="secondary button" onClick={onBack}>Choose Another File</button>
         </div>
+        <p>{textPreview ? "Check the extracted text before starting your ratings." : "Check every page before starting your ratings."}</p>
       </footer>
     </section>
   );

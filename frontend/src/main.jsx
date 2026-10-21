@@ -1,3 +1,4 @@
+import ProjectWordingSuggestion from './ProjectWordingSuggestion.jsx';
 import { demoCreateDetails } from './demo-create-details.js';
 import CreateResume from './CreateResume.jsx';
 import { blankResumeDetails, createResumeError, resumeFromDetails } from './create-resume.js';
@@ -4888,7 +4889,7 @@ function App() {
                 subtitle="Share what you know. Skip what you don’t."
               />
               <form
-                className="questions card"
+                className="questions card builder-question-form"
                 onSubmit={(e) => {
                   e.preventDefault();
                   build();
@@ -5299,7 +5300,8 @@ function App() {
                               projects
                             </small>
                           )}
-                      </article>
+                      {key === "projects" && !demo && <ProjectWordingSuggestion value={resume.projects} onChange={projects => setResume(current => ({ ...current, projects }))} />}
+</article>
                     ))}
                 </section>
                 <button

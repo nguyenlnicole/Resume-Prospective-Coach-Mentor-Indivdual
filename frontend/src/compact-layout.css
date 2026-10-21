@@ -4292,3 +4292,16 @@ main:not(.page-home):not(.page-admin):not(.page-forgot):not(.page-reset)
   .complete-top-row:has(> .beta-rating) { display: grid; grid-template-columns: minmax(0, 1fr) 230px; width: 100%; min-height: 0; align-items: start; }
   .app-shell main.page-complete .complete-top-row > .beta-rating.card { position: static; justify-self: end; width: 230px; }
 }
+.app-shell .builder-question-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 840px;
+  box-sizing: border-box;
+}
+.builder-question-form > section,
+.builder-question-form > .question { min-width: 0; width: 100%; margin: 0; box-sizing: border-box; }
+.builder-question-form > section > .field:last-child,
+.builder-question-form > .question .field { margin-bottom: 0; }
+.builder-question-form > .page-actions { margin-top: 4px; }

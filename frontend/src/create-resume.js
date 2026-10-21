@@ -8,6 +8,9 @@ export function createResumeError(value, step = value.step) {
   if (step === 1) {
     for (const job of value.experience) {
       if (!job.role?.trim() || !job.employer?.trim() || !job.description?.trim() || !completeMonth(job.start) || (!job.current && !completeMonth(job.end))) return 'Complete each experience, including its dates and what you did, or remove the empty entry.';
+      const today = new Date();
+      const currentMonth = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`;
+      if (job.start > currentMonth || (!job.current && job.end > currentMonth)) return 'Experience dates cannot be in the future.';
       if (!job.current && job.end < job.start) return 'An experience end date cannot be before its start date.';
     }
   }
