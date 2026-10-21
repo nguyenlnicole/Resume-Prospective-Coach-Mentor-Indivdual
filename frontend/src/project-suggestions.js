@@ -9,6 +9,7 @@ export function suggestProjects(projects, repos, target) {
   const current = projects.map((project,index)=>({index,score:score(project).length})).sort((a,b)=>a.score-b.score)[0];
   return repos.filter(repo=>!repo.fork && !repo.archived && !repo.is_template && repo.size > 0
     && /^https:\/\/github\.com\/[^/]+\/[^/]+\/?$/.test(repo.html_url || '')
+    && (() => { const parts = new URL(repo.html_url).pathname.split("/").filter(Boolean); return parts[0].toLowerCase() !== parts[1].toLowerCase(); })()
     && !projects.some(project=>nameKey(project)===nameKey(repo.name) || project.includes(repo.html_url)))
     .map(repo=>({name:repo.name,url:repo.html_url,description:repo.description || '',
       matched:score([repo.name,repo.description,repo.language,...(repo.topics || [])].filter(Boolean).join(' ')),replaceIndex:needsProjects ? null : current.index}))

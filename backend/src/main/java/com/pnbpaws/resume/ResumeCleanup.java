@@ -82,6 +82,7 @@ class ResumeCleanup {
       projects.add(heading+(body.isEmpty()?"":"\n"+String.join("\n",body)));
     }
     result.put("projects",String.join("\n\n",projects));
+    result.put("experience", ExperienceOrder.sort(result.path("experience").asText()));
     result.put("education", compactEducation(result.path("education").asText()));
     result.put("certifications", CredentialFormatting.normalize(result.path("certifications").asText()));
     return result;

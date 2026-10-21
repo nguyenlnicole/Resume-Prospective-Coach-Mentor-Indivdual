@@ -15,10 +15,11 @@ class NewExperienceTest {
         .put("description", "Taught students and prepared lessons. ".repeat(10));
     return data;
   }
-  @Test void requiresFiftyWordsAndValidDates() {
+  @Test void acceptsShortNotesAndRequiresValidDates() {
     ObjectNode data = data();
+    ((ObjectNode)data.path("newExperience")).put("description", "Taught students.");
     assertDoesNotThrow(() -> NewExperience.validate(data));
-    ((ObjectNode)data.path("newExperience")).put("description", "Too short");
+    ((ObjectNode)data.path("newExperience")).put("description", "");
     assertThrows(ResponseStatusException.class, () -> NewExperience.validate(data));
     ObjectNode reversed = data();
     ((ObjectNode)reversed.path("newExperience")).put("current", false).put("end", "2023-07");
@@ -55,7 +56,7 @@ class NewExperienceTest {
     assertTrue(experience.indexOf("Taught students.") < experience.indexOf("Assistant"));
     assertTrue(experience.indexOf("Helped library visitors.") > experience.indexOf("Assistant"));
     assertTrue(experience.contains("January 2020 \u2013 February 2022"), experience);
-    second.put("description", "Too short");
+    second.put("description", "");
     assertThrows(ResponseStatusException.class, () -> NewExperience.validate(data));
   }
 }

@@ -26,6 +26,9 @@ class WorkflowDrafts {
     var rows=db.queryForList("SELECT updated_at FROM workflow_draft WHERE owner=?",owner);
     return rows.isEmpty()?Map.of("available",false):Map.of("available",true,"updatedAt",rows.getFirst().get("UPDATED_AT"));
   }
+  void delete(String owner) {
+    db.update("DELETE FROM workflow_draft WHERE owner=?", owner);
+  }
   @org.springframework.transaction.annotation.Transactional
   public Map<String,Object> save(String owner, String text, MultipartFile file, HttpSession session) throws Exception {
     if(text==null || text.length()>2_000_000)throw new ResponseStatusException(BAD_REQUEST,"This draft is too large to save.");
@@ -90,6 +93,7 @@ class WorkflowDraftController {
   private String owner(HttpSession session){access.requireTools(session);return Objects.toString(access.state(session).get("email"),"");}
   @GetMapping Map<String,Object> info(HttpSession session,jakarta.servlet.http.HttpServletResponse response){response.setHeader("Cache-Control","no-store");return drafts.info(owner(session));}
   @PostMapping Map<String,Object> save(@RequestParam String snapshot,@RequestParam(required=false) MultipartFile file,HttpSession session)throws Exception{return drafts.save(owner(session),snapshot,file,session);}
+  @DeleteMapping Map<String,Boolean> delete(HttpSession session){drafts.delete(owner(session));return Map.of("ok",true);}
   @PostMapping("/resume") Map<String,Object> resume(HttpSession session,jakarta.servlet.http.HttpServletResponse response)throws Exception{response.setHeader("Cache-Control","no-store");return drafts.resume(owner(session),session);}
   @PostMapping("/review/{id}/resume") Map<String,Object> resumeReview(@PathVariable String id,HttpSession session,jakarta.servlet.http.HttpServletResponse response)throws Exception{response.setHeader("Cache-Control","no-store");return drafts.resumeReview(owner(session),id,session);}
 }

@@ -12,8 +12,8 @@ final class SummaryRevision {
 
   static String finish(String draft, String original, Function<String, String> rewrite) {
     String summary = draft.strip();
-    for (int attempt = 0; attempt < 2; attempt++) {
-      if (valid(summary) && !summary.equals(original.strip())) return summary;
+    for (int attempt = 0; attempt < 1; attempt++) {
+      if (valid(summary)) return summary;
       summary = rewrite.apply(summary).strip();
     }
 

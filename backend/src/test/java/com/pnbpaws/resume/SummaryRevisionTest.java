@@ -13,8 +13,8 @@ class SummaryRevisionTest {
     assertEquals(FINISHED, SummaryRevision.finish("word ".repeat(46), "Original.", draft -> { calls.incrementAndGet(); return FINISHED; }));
     assertEquals(1, calls.get());
   }
-  @Test void rewritesAnUnchangedOriginalRatherThanReturningIt() {
-    assertEquals(FINISHED + " Today.", SummaryRevision.finish(FINISHED, FINISHED, draft -> FINISHED + " Today."));
+  @Test void keepsAnAlreadyValidSummaryWithoutAnotherAiCall() {
+    assertEquals(FINISHED, SummaryRevision.finish(FINISHED, FINISHED, draft -> { fail("Unexpected rewrite"); return ""; }));
   }
   @Test void preservesAValidRewrittenSummary() {
     assertEquals(FINISHED, SummaryRevision.finish(FINISHED, "Original.", draft -> { fail("Unexpected rewrite"); return ""; }));
@@ -22,6 +22,6 @@ class SummaryRevisionTest {
   @Test void returnsUsableRepairWhenLengthTargetIsNotMet() {
     var calls = new AtomicInteger();
     assertEquals("Still too short.", SummaryRevision.finish("Too short.", "Original.", draft -> { calls.incrementAndGet(); return "Still too short."; }));
-    assertEquals(2, calls.get());
+    assertEquals(1, calls.get());
   }
 }

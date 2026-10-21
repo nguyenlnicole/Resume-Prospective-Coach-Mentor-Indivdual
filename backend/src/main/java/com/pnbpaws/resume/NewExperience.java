@@ -33,8 +33,8 @@ final class NewExperience {
         throw new ResponseStatusException(BAD_REQUEST, "Enter a valid role and employer or organization.");
     }
     String description = value.path("description").asText().strip();
-    if (description.isEmpty() || description.split("\\s+").length < 50 || description.length() > 10000)
-      throw new ResponseStatusException(BAD_REQUEST, "Describe your new experience in at least 50 words (up to 10,000 characters).");
+    if (description.isEmpty() || description.length() > 10000)
+      throw new ResponseStatusException(BAD_REQUEST, "Add a few words about your work, up to 10,000 characters.");
     try {
       YearMonth start = YearMonth.parse(value.path("start").asText());
       if (start.isAfter(YearMonth.now())) throw new IllegalArgumentException();
@@ -63,6 +63,10 @@ final class NewExperience {
       result.set("newExperienceBullets", role == first ? firstBullets : secondBullets);
       appendOne(roleData, result);
     }
+    ObjectNode resume=(ObjectNode)result.path("resume");
+    resume.put("experience",ExperienceOrder.sort(resume.path("experience").asText()));
+    for(JsonNode change:result.path("protectedChanges"))
+      if(change.path("section").asText().equals("experience")) ((ObjectNode)change).put("after",resume.path("experience").asText());
     result.remove("newExperienceSecondBullets");
     return result;
   }

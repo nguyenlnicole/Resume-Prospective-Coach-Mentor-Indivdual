@@ -4,6 +4,7 @@ import { blankResumeDetails, createResumeError, resumeFromDetails } from './crea
 import NewProjectFields from './NewProjectFields.jsx';
 import { newProjectsError, addNewProjects } from './new-projects.js';
 import NewExperienceFields from './NewExperienceFields.jsx';
+import LinkedinExperienceImport from './LinkedinExperienceImport.jsx';
 import { newExperienceError, removeOldestExperience } from './new-experience.js';
 import { visibleReviewFindings } from "./review-findings.js";
 import { demoJobUrl, demoJobTitle, demoJobDescription } from "./demo-job";
@@ -1409,11 +1410,10 @@ function App() {
         body.append("email", email.trim());
         body.append("consent", "true");
         result = await request("/review", { method: "POST", body });
-        await refreshAccess();
+        void refreshAccess();
       }
       clearInterval(timer);
       setReviewProgress(100);
-      await new Promise((resolve) => setTimeout(resolve, 400));
       setCodingChoice(demoMode ? true : null);
       setReview(result);
       setWantCoverLetter(demoMode);
@@ -1776,7 +1776,7 @@ function App() {
           newExperience,
           newProjects: technicalOptions ? newProjects : [],
         });
-        await refreshAccess();
+        void refreshAccess();
         const normalized = {
           ...data,
           resume: normalizeResume({
@@ -2873,7 +2873,7 @@ function App() {
                 access.accessKind !== "beta-pass" &&
                 !betaEdition && (
                   <div className="coach-history-buttons">
-                    <CoachSavedReviews
+                    <CoachSavedReviews onResumeProgress={() => resumeWorkflowProgress()}
                       onOpen={(data) => {
                         setReview(data.review);
                         setResume(clone(data.review.resume));
@@ -3481,15 +3481,10 @@ function App() {
                 title="Compare your two versions"
                 subtitle="Choose one to email or download."
               />
-              <div
-                className="layout-comparison"
-                role="group"
-                aria-label="Compare resume versions"
-              >
-                <section
-                  className={`card layout-option ${layout === "original" ? "selected" : ""}`}
-                >
-                  <h2>Resume you built</h2>
+              {aiResume?.rewriteNotice && <div className="rewrite-notice">
+                <Notice>{aiResume.rewriteNotice.replace("Some AI rewrites were incomplete. Your original ", "Some rewrites were incomplete. We kept your original ").replace(" wording was kept so no details were lost. You can use this draft or try the wording again.", " wording and details. Use this draft or try the wording again.")}</Notice>
+                {!aiBusy && <Button secondary onClick={() => generateAiVersion(resume)}>Try PNB Paws wording again</Button>}
+              </div>}
                   {demoMode && (
                     <p className="rerate-result">
                       <strong>Example final rating: 9.2/10</strong>
@@ -3499,6 +3494,15 @@ function App() {
                       </span>
                     </p>
                   )}
+              <div
+                className="layout-comparison"
+                role="group"
+                aria-label="Compare resume versions"
+              >
+                <section
+                  className={`card layout-option ${layout === "original" ? "selected" : ""}`}
+                >
+                  <h2>Resume you built</h2>
                   <PdfPreview
                     resume={resume}
                     level={reviewLevel}
@@ -3549,8 +3553,6 @@ function App() {
                   className={`card layout-option ${layout === "template" ? "selected" : ""}`}
                 >
                   <h2>PNB Paws version</h2>
-                  {aiResume?.rewriteNotice && <Notice>{aiResume.rewriteNotice}</Notice>}
-                  {aiResume?.rewriteNotice && !aiBusy && <Button secondary onClick={() => generateAiVersion(resume)}>Try PNB Paws wording again</Button>}
                   {aiResume ? (
                     <PdfPreview
                       resume={aiResume}
@@ -4893,6 +4895,7 @@ function App() {
                 }}
               >
               {technicalOptions && <NewProjectFields value={newProjects} onChange={setNewProjects} />}
+              <LinkedinExperienceImport url={normalizeWebLink(profileLinkedin)} onApply={setNewExperience} disabled={demo} />
               <NewExperienceFields value={newExperience} onChange={setNewExperience} hasExperience={experienceOptions.length > 0} />
                 {projectOptions
                   .map((project, index) => ({ project, index }))

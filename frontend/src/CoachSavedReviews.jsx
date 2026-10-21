@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Folder, X } from "lucide-react";
 import { request, post } from "./api";
-export default function CoachSavedReviews({ onOpen }) {
+export default function CoachSavedReviews({ onOpen, onResumeProgress }) {
   const [open, setOpen] = useState(false),
     [items, setItems] = useState([]),
     [error, setError] = useState(""),
@@ -16,7 +16,7 @@ export default function CoachSavedReviews({ onOpen }) {
     setBusy(true);
     setError("");
     try {
-      setItems(await request("/coach/saved"));
+      const [reviews,draft]=await Promise.all([request("/coach/saved"),request("/workflow-draft")]);setItems([...(draft.available?[{id:"workflow-draft",firstName:"Saved progress",savedAt:draft.updatedAt}]:[]),...reviews]);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -26,7 +26,7 @@ export default function CoachSavedReviews({ onOpen }) {
   async function remove(id) {
     setBusy(true);
     try {
-      await request(`/coach/saved/${id}`, { method: "DELETE" });
+      await request(id === "workflow-draft" ? "/workflow-draft" : `/coach/saved/${id}`, { method: "DELETE" });
       setItems(items.filter((x) => x.id !== id));
     } catch (e) {
       setError(e.message);
@@ -37,6 +37,7 @@ export default function CoachSavedReviews({ onOpen }) {
   async function resume(id) {
     setBusy(true);
     try {
+      if (id === "workflow-draft") { await onResumeProgress(); setOpen(false); return; }
       const data = await post(`/coach/saved/${id}/open`, {});
       onOpen(data);
       setOpen(false);

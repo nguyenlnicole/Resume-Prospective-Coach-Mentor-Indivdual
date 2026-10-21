@@ -32,14 +32,14 @@ function ProjectFields({ value, onChange, onRemove, index }) {
     {(message || value.importNote) && <p role="status">{message || value.importNote}</p>}
     {[
       ['name','Project name',false], ['description','What does the project do?',true],
-      ['contribution','What did you personally build or contribute? Include real results if known.',true],
-      ['stack','Technologies you actually used',false], ['demo','Demo URL · Optional',false],
+      ['contribution','Your contribution and results (optional if not available)',true],
+      ['stack','Technologies you actually used (optional if not available)',false], ['demo','Demo URL · Optional',false],
     ].map(([key,label,multiline]) => <div className="field" key={key}>
       <label htmlFor={`${prefix}-${key}`}>{label}</label>
       {multiline ? <textarea id={`${prefix}-${key}`} rows={3} maxLength={4000} value={value[key] || ''} onChange={e => update(key,e.target.value)} />
         : <input id={`${prefix}-${key}`} maxLength={key === 'name' ? 160 : 1000} value={value[key] || ''} onChange={e => update(key,e.target.value)} />}
     </div>)}
-    <label className="consent"><input type="checkbox" disabled={loading} checked={Boolean(value.confirmed)} onChange={e => onChange({...value, confirmed:e.target.checked})} /> I checked these details and confirm they describe my project and my own work.</label>
+    <p>GitHub may not provide every detail. Missing contributions and technologies can stay blank; include only facts you can confirm.</p>
     <button type="button" className="text-button" onClick={onRemove}>Remove this new project</button>
   </section>;
 }

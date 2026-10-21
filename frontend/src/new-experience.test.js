@@ -2,10 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { newExperienceError, removeOldestExperience } from './new-experience.js';
 
-test('new experience requires fifty words and ordered dates', () => {
+test('new experience accepts short notes and requires ordered dates', () => {
   const value = { enabled: true, role: 'Teacher', employer: 'School', description: 'word '.repeat(50), start: '2024-08', current: true };
   assert.equal(newExperienceError(value), '');
-  assert.match(newExperienceError({ ...value, description: 'word '.repeat(49) }), /50 words/);
+  assert.equal(newExperienceError({ ...value, description: 'Helped customers.' }), '');
+  assert.match(newExperienceError({ ...value, description: ' ' }), /few words/);
   assert.match(newExperienceError({ ...value, current: false, end: '2023-08' }), /end date/);
   assert.equal(newExperienceError({ enabled: false }), '');
 });
@@ -26,6 +27,7 @@ test('does not guess at the age of undated or current experience', () => {
 test('each of two new roles needs its own complete details', () => {
   const role = {enabled:true,role:'Teacher',employer:'School',description:'word '.repeat(50),start:'2024-08',current:true};
   assert.equal(newExperienceError({...role,secondRole:{...role}}), '');
-  assert.match(newExperienceError({...role,secondRole:{...role,description:'Short'}}), /50 words/);
+  assert.equal(newExperienceError({...role,secondRole:{...role,description:'Scheduled appointments.'}}), '');
+  assert.match(newExperienceError({...role,secondRole:{...role,description:''}}), /few words/);
   assert.equal(newExperienceError({...role,secondRole:{enabled:false}}), '');
 });

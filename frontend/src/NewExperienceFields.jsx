@@ -16,10 +16,10 @@ export default function NewExperienceFields({ value, onChange, hasExperience, se
         <label htmlFor={`${prefix}-${key}`}>{key === 'role' ? 'Role or job title' : 'Employer or organization'}</label>
         <input id={`${prefix}-${key}`} required maxLength={160} value={value[key] || ''} onChange={e => update(key,e.target.value)} />
       </div>)}
-      <div className="field"><label htmlFor={`${prefix}-description`}>Describe your work in at least 50 words</label>
+      <div className="field"><label htmlFor={`${prefix}-description`}>Tell us briefly what you did</label>
         <p>Tell us what you did, who you helped, and any results. We’ll turn your real details into bullet points.</p>
         <textarea id={`${prefix}-description`} required rows={6} maxLength={10000} value={value.description || ''} onChange={e => update('description',e.target.value)} />
-        <p aria-live="polite">{words} / 50 words minimum</p>
+        <p aria-live="polite">{words} words · No minimum</p>
       </div>
       <div className="field"><label htmlFor={`${prefix}-start`}>Start date</label><MonthYearSelect id={`${prefix}-start`} label="Start date" required value={value.start || ''} onChange={next => update('start',next)} /></div>
       <label><input type="checkbox" checked={Boolean(value.current)} onChange={e => update('current',e.target.checked)} /> I still work here</label>

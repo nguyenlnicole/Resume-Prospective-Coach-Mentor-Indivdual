@@ -432,7 +432,7 @@ export function normalizeResume(resume) {
     "summary",
   ])
     result[key] = stripSectionHeading(result[key] || "", key);
-  result.experience = formatExperience(result.experience);
+  result.experience = formatExperience(newestExperienceFirst(result.experience));
   result.projects = normalizeProjectHeadings(result.projects);
   result.education = compactEducation(result.education);
   result.certifications = normalizeCredentials(result.certifications);
@@ -546,6 +546,17 @@ export function projectDescriptionWords(project = "") {
       .replace(/https?:\/\/\S+/g, ""),
   );
 }
+export function newestExperienceFirst(text = '') {
+  const months = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+  const score = entry => {
+    const heading = entry.split(/\r?\n/).filter(line => !/^\s*[•*\-]\s/.test(line)).join(' ');
+    const dates = [...heading.matchAll(/(?:(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\.?\s+|(\d{1,2})\/)?((?:19|20)\d{2})/gi)]
+      .map(match => Number(match[3])*12 + (match[1] ? months.indexOf(match[1].slice(0,3).toLowerCase()) : match[2] ? Number(match[2])-1 : 0));
+    return [/\b(?:present|current)\b/i.test(heading) ? 1 : 0, dates.at(-1) ?? -1, dates[0] ?? -1];
+  };
+  return experienceList(text).map(entry=>({entry,rank:score(entry)})).sort((a,b)=>b.rank[0]-a.rank[0] || (a.rank[0] ? b.rank[2]-a.rank[2] : b.rank[1]-a.rank[1]) || b.rank[2]-a.rank[2]).map(item=>item.entry).join('\n\n');
+}
+
 export function experienceList(text = "") {
   const entries = [];
   let current = [];
