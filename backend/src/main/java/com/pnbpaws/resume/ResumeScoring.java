@@ -83,7 +83,7 @@ class ResumeScoring {
             "projects",
             "Project presentation and viewable links",
             List.of("Entry / Junior", "Mid-level").contains(level)
-                ? "For software engineering or coding roles, exactly three distinct project entries with verified technologies. A clickable repository or demo link for each project strengthens this check; missing both lowers the rating but never blocks a draft. For other technical fields, projects and links are optional; omission meets this check."
+                ? "For software engineering or coding roles, at least three distinct project entries (more are welcome) with verified technologies. A clickable repository or demo link for each project strengthens this check; missing both lowers the rating but never blocks a draft. For other technical fields, projects and links are optional; omission meets this check."
                 : "Projects are optional. Omission fully meets this check; if included for coding work, show verified technologies and a clickable repository or demo link where available. Missing both links lowers this check, but never blocks a draft. Other technical fields do not require project links."));
   }
 
@@ -145,7 +145,7 @@ class ResumeScoring {
               new Criterion(
                   "projects",
                   "Relevant practical work",
-                  "For software engineering/coding work, exactly three genuine projects, identifying technical"
+                  "For software engineering/coding work, at least three genuine projects (more are welcome), identifying technical"
                       + " approach and applicant contribution; working links are not proof of"
                       + " repository quality or authorship. For other technical fields, relevant labs or practical work can demonstrate skills; projects and repositories are optional."));
       case "Mid-level" ->
@@ -205,7 +205,7 @@ class ResumeScoring {
                 {
                   "projects",
                   "Relevant practical work",
-                  "For software engineering/coding work, exactly three genuine projects with clear implementation"
+                  "For software engineering/coding work, at least three genuine projects (more are welcome) with clear implementation"
                       + " contributions. For other technical fields, relevant practical work or labs may demonstrate skills; do not require coding projects or repository links."
                 }
               });

@@ -15,12 +15,12 @@ class ProjectWordingController {
   ProjectWordingController(CoachAccess access, AdminService admin, AiService ai) {
     this.access = access; this.admin = admin; this.ai = ai;
   }
-  record Input(String description) {}
+  record Input(String description, String title, String experience) { Input(String description) { this(description, null, null); } Input(String description, String title) { this(description, title, null); } }
   @PostMapping("/shorten") Map<String, String> shorten(@RequestBody Input input, HttpServletRequest request) {
     access.requireTools(request.getSession());
-    if (input.description() == null || input.description().isBlank() || input.description().length() > 6000)
+    if (input.description() == null || input.description().isBlank() || input.description().length() > 6000 || (input.title() != null && input.title().length() > 1500) || (input.experience() != null && input.experience().length() > 20000))
       throw new ResponseStatusException(BAD_REQUEST, "Provide a project description under 6,000 characters.");
     admin.limit("project-wording:" + request.getRemoteAddr(), 12);
-    return Map.of("text", ai.shortenProject(input.description()));
+    return Map.of("text", ai.rewriteProject(input.description(), input.title(), input.experience()));
   }
 }

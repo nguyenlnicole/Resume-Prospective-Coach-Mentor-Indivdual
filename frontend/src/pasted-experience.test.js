@@ -23,3 +23,8 @@ test('formats dates and removes copied city metadata without losing achievements
  assert.equal(cleanExperienceDescription('Columbus, Ohio Metropolitan Area · On-site - Trained models with F1 of 0.90.\nBuilt 5,000 signals.'), 'Trained models with F1 of 0.90.\nBuilt 5,000 signals.');
  assert.equal(cleanExperienceDescription('Improved on-site testing in Columbus.'), 'Improved on-site testing in Columbus.');
 });
+
+ test('removes standalone LinkedIn work mode and repeated Present metadata', () => {
+  const result = pastedExperience('AI Engineer\nMatching Donors · Part-time\nSep 2026 - Present · 2 mos\nRemote\nPresent\nBuild AI-integrated software for MatchingDonors.com outreach and marketing programs daily.');
+  assert.equal(result.description, 'Build AI-integrated software for MatchingDonors.com outreach and marketing programs daily.');
+ });

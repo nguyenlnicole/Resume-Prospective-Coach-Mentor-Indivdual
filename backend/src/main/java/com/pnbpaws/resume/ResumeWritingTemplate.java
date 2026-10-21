@@ -202,6 +202,6 @@ final class ResumeWritingTemplate {
   static final String PROJECTS = "\nFor projects hosted by a university, lab, employer or club, the organization is context, not the project title. "
       + "Put the actual supplied project name first, with any verified repo/demo links beside it. Follow with Organization: [supplied organization]. "
       + "Keep each supplied project role on its own line as [actual role or role scope] | [its supplied dates]. Do not merge role dates or turn membership into leadership. "
-      + "Then write a concise contribution description, keeping roles/dates separate from that description. Preserve the links, supported metrics and technologies. "
+      + "Then write a natural paragraph describing what was built, its purpose, concrete features and supported contributions. Do not repeat the project name or heading in the paragraph. Default to a concise two-sentence project paragraph. Use a longer three-to-four-sentence paragraph only when relevant work experience is limited and substantial verified project detail helps demonstrate qualifications. Do not expand every project automatically or crowd out relevant employment. There is no fixed word cap, but length must serve a need. Preserve more than three projects when selected. Keep roles/dates separate from that description. Preserve the links, supported metrics and technologies. "
       + "Never use a lab or university name as a stand-in for a clearly named project or invent a project when its name is unknown. ";
 }

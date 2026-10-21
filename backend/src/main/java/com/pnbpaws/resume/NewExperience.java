@@ -33,8 +33,8 @@ final class NewExperience {
         throw new ResponseStatusException(BAD_REQUEST, "Enter a valid role and employer or organization.");
     }
     String description = value.path("description").asText().strip();
-    if (description.isEmpty() || description.length() > 10000)
-      throw new ResponseStatusException(BAD_REQUEST, "Add a few words about your work, up to 10,000 characters.");
+    if (description.isEmpty() || description.matches("https?://\\S+") || java.util.Arrays.stream(description.split("\\s+")).filter(word -> word.matches(".*[\\p{L}\\p{N}].*")).count() < 10 || description.length() > 10000)
+      throw new ResponseStatusException(BAD_REQUEST, "Describe what you did in at least 10 words, up to 10,000 characters. Paste the experience text, not a profile link.");
     try {
       YearMonth start = YearMonth.parse(value.path("start").asText());
       if (start.isAfter(YearMonth.now())) throw new IllegalArgumentException();

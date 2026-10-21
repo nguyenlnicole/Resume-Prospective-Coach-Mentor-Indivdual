@@ -1,48 +1,70 @@
-import React from 'react';
-import { pastedExperience, cleanExperienceDescription } from './pasted-experience.js';
-import MonthYearSelect from './MonthYearSelect.jsx';
+import React, { useState, useRef, useEffect } from 'react';
+import { post } from './api.js';
+import { pastedExperience, formatExperienceMonth } from './pasted-experience.js';
+import { experienceWordCount, newExperienceError } from './new-experience.js';
 
-function JobBox({ value, onChange, number, optional, hasExperience }) {
+function JobBox({ value, onChange, number, optional, hasExperience, demo }) {
   const prefix = number === 1 ? 'new' : 'second';
-  const update = (key, next) => onChange({ ...value, [key]: next });
+  const [showPreview, setShowPreview] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [generationError, setGenerationError] = useState('');
+  const generation = useRef(0);
+  useEffect(() => () => { generation.current++; }, []);
+  async function previewRole() {
+    setShowPreview(true);
+    if (error || generating || value.previewBullets?.length === 3) return;
+    const requestId = ++generation.current;
+    setGenerating(true); setGenerationError('');
+    try {
+      const result = await post('/resume/experience-bullets', { ...value, enabled: true, secondRole: undefined });
+      if (requestId === generation.current) onChange({ ...value, previewBullets: result.bullets });
+    } catch (failure) { if (requestId === generation.current) setGenerationError(failure.message); }
+    finally { if (requestId === generation.current) setGenerating(false); }
+  }
+  const update = (key, next) => { generation.current++; setGenerating(false); onChange({ ...value, [key]: next }); };
+  const restoredText = value.role && value.employer
+    ? [value.role, value.employer, `${formatExperienceMonth(value.start)} - ${value.current ? 'Present' : formatExperienceMonth(value.end)}`, value.description].filter(Boolean).join('\n')
+    : value.description || '';
+  const text = value.pastedText ?? restoredText;
+  const error = newExperienceError({ ...value, enabled: true, secondRole: undefined });
   return <section className="card shortlist-card experience-entry">
-    <h3>Job {number}{optional ? ' · Optional' : ''}</h3>
-    {optional && <label className="experience-current"><input type="checkbox" checked={Boolean(value.enabled)} onChange={e => update('enabled', e.target.checked)} /> Add this second job to my resume</label>}
+    <h3>Fill experience from LinkedIn</h3>
+    <p><strong>Experience {number}{optional ? ' · Optional' : ''}</strong></p>
+    {optional && <div className="field"><label htmlFor="second-add-experience">Add a second experience?</label><select id="second-add-experience" value={value.enabled ? 'yes' : 'no'} onChange={e => update('enabled', e.target.value === 'yes')}><option value="no">No</option><option value="yes">Yes</option></select></div>}
     <fieldset disabled={optional && !value.enabled} className="experience-job-fields">
       <div className="field">
-        <label htmlFor={`${prefix}-description`}>Paste your LinkedIn experience or describe this job</label>
-        <p>Use this box for one job. Paste its full LinkedIn Experience entry, or describe your responsibilities, tools, and results. Include the job title and employer. Check the fields below, choose your start and end dates, or select “I still work here.”</p>
-        <textarea id={`${prefix}-description`} required rows={4} maxLength={10000} value={value.description || ''} onChange={e => update('description', e.target.value)} onBlur={() => {
-          const parsed = pastedExperience(value.description || '');
-          if (parsed) onChange({ ...value, ...parsed });
-          else update('description', cleanExperienceDescription(value.description || ''));
-        }} placeholder={'Machine Learning Engineer\nCompany or lab name\nMay 2026 – Present\nDescribe what you built, who you helped, and any results.'} />
-        <small>Copied job titles and dates fill the fields below when recognized. No minimum word count. Part-time labels are left out.</small>
+        <label htmlFor={`${prefix}-description`}>LinkedIn Experience text or your job description</label>
+        <p>Paste one LinkedIn job, or enter your role, company, dates (or Present), and two sentences about your work—at least 10 words. We’ll turn your facts into bullet points.</p>
+        <textarea id={`${prefix}-description`} required rows={7} maxLength={10000} value={text} onChange={e => {
+          const pastedText = e.target.value;
+          const parsed = pastedExperience(pastedText);
+          generation.current++; setGenerating(false); setGenerationError('');
+          onChange({ ...value, previewBullets: undefined, pastedText, ...(parsed || {role:'', employer:'', start:'', end:'', current:false, description:''}) });
+          setShowPreview(false);
+        }} placeholder={'Copy and paste the entire LinkedIn Experience entry for one job, or provide your own details: role, company, dates (or Present), and at least two sentences about your work.'} />
+        <small>{experienceWordCount(value.description)} / 10 words minimum. Paste text, not a profile link.</small>
       </div>
-      <div className="experience-entry-grid">
-        {['role', 'employer'].map(key => <div className="field" key={key}>
-          <label htmlFor={`${prefix}-${key}`}>{key === 'role' ? 'Role or job title' : 'Employer or organization'}</label>
-          <input id={`${prefix}-${key}`} required maxLength={160} value={value[key] || ''} onChange={e => update(key, e.target.value)} />
-        </div>)}
-      </div>
-      <label className="experience-current"><input type="checkbox" checked={Boolean(value.current)} onChange={e => update('current', e.target.checked)} /> I still work here</label>
-      <div className="experience-entry-grid">
-        <div className="field"><label htmlFor={`${prefix}-start`}>Start date</label><MonthYearSelect id={`${prefix}-start`} label="Start date" required value={value.start || ''} onChange={next => update('start', next)} /></div>
-        {!value.current && <div className="field"><label htmlFor={`${prefix}-end`}>End date</label><MonthYearSelect id={`${prefix}-end`} label="End date" required value={value.end || ''} onChange={next => update('end', next)} /></div>}
-      </div>
-      {hasExperience && <label className="experience-current"><input type="checkbox" checked={value.replaceOldest !== false} onChange={e => update('replaceOldest', e.target.checked)} /> Remove my oldest completed experience to make room.</label>}
+      <button type="button" className="button secondary" style={{alignSelf:'flex-start'}} disabled={generating || demo} onClick={previewRole}>{generating ? 'Writing three bullets…' : 'Find this role'}</button>
+      {showPreview && (error ? <p role="alert">{error}</p> : <div className="experience-preview">
+        <p role="status">Check these details. Edit the text above to make changes.</p>
+        <h4>{value.role} · {value.employer}</h4>
+        <p>{formatExperienceMonth(value.start)} – {value.current ? 'Present' : formatExperienceMonth(value.end)}</p>
+        {generating ? <p role="status">Turning your details into three resume bullets…</p> : value.previewBullets?.length ? <ul>{value.previewBullets.map((bullet, index) => <li key={index}>{bullet}</li>)}</ul> : null}
+        {generationError && <p role="alert">{generationError} Your original details are kept. Select “Find this role” to retry.</p>}
+      </div>)}
+      {hasExperience && <label className="experience-current"><input type="checkbox" checked={value.replaceOldest === true} onChange={e => update('replaceOldest', e.target.checked)} /> Replace my oldest completed experience with this role (optional).</label>}
     </fieldset>
   </section>;
 }
 
-export default function NewExperienceFields({ value, onChange, hasExperience }) {
+export default function NewExperienceFields({ value, onChange, hasExperience, demo = false }) {
   return <section className="experience-jobs">
-    <div className="field"><label htmlFor="add-experience">Do you have any new experience to add?</label>
+    <div className="field"><label htmlFor="add-experience">Add additional experience?</label>
       <select id="add-experience" value={value.enabled ? 'yes' : 'no'} onChange={e => onChange({ ...value, enabled: e.target.value === 'yes' })}><option value="no">No</option><option value="yes">Yes</option></select>
     </div>
     {value.enabled && <>
-      <JobBox number={1} value={value} onChange={onChange} hasExperience={hasExperience} />
-      <JobBox number={2} optional value={value.secondRole || { enabled: false }} onChange={secondRole => onChange({ ...value, secondRole })} hasExperience={hasExperience} />
+      <JobBox number={1} value={value} onChange={onChange} hasExperience={hasExperience} demo={demo} />
+      <JobBox number={2} optional value={value.secondRole || { enabled: false }} onChange={secondRole => onChange({ ...value, secondRole })} hasExperience={hasExperience} demo={demo} />
     </>}
   </section>;
 }

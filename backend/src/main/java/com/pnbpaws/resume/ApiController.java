@@ -481,6 +481,16 @@ class ApiController {
     return requested;
   }
 
+  @PostMapping("/resume/experience-bullets")
+  JsonNode experienceBullets(@RequestBody JsonNode role, HttpServletRequest req) {
+    if (req.getSession(false) == null || req.getSession(false).getAttribute("reviewedLevel") == null)
+      throw new ResponseStatusException(UNAUTHORIZED, "Start your resume before preparing experience bullets.");
+    if (!role.isObject() || role.toString().length() > 24000)
+      throw new ResponseStatusException(BAD_REQUEST, "Please shorten the experience details.");
+    admin.limit("experience-bullets:" + req.getRemoteAddr(), 12);
+    return ai.experienceBullets(role);
+  }
+
   @PostMapping("/build")
   JsonNode build(@RequestBody JsonNode data, HttpServletRequest req) throws Exception {
     String selected =

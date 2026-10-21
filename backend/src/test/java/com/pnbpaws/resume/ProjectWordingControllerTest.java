@@ -15,8 +15,8 @@ class ProjectWordingControllerTest {
     var ai=mock(AiService.class); var access=mock(CoachAccess.class);
     var controller=new ProjectWordingController(access,mock(AdminService.class),ai);
     var request=new MockHttpServletRequest();
-    when(ai.shortenProject("Original project details")).thenReturn("Suggested wording");
-    assertEquals("Suggested wording",controller.shorten(new ProjectWordingController.Input("Original project details"),request).get("text"));
+    when(ai.rewriteProject("Original project details", null, null)).thenReturn("Suggested wording");
+    assertEquals("Suggested wording",controller.shorten(new ProjectWordingController.Input("Original project details", null),request).get("text"));
     verify(access).requireTools(request.getSession());
   }
 }

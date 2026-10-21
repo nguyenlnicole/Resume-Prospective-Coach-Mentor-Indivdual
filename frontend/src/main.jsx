@@ -7,7 +7,7 @@ import { blankResumeDetails, createResumeError, resumeFromDetails } from './crea
 import NewProjectFields from './NewProjectFields.jsx';
 import { newProjectsError, addNewProjects } from './new-projects.js';
 import NewExperienceFields from './NewExperienceFields.jsx';
-import { newExperienceError, removeOldestExperience } from './new-experience.js';
+import { newExperienceError, removeOldestExperience, shouldReplaceOldestExperience } from './new-experience.js';
 import { visibleReviewFindings } from "./review-findings.js";
 import { demoJobUrl, demoJobTitle, demoJobDescription } from "./demo-job";
 import { addRepositorySkills, newlyListedSkills } from "./repo-skills";
@@ -1272,11 +1272,8 @@ function App() {
   const experienceMax = seniorExperience ? 6 : 4;
   const experienceChoiceRequired =
     experienceOptions.length > (seniorExperience ? 5 : 4);
-  const keptExperience =
-    selectedExperience ??
-    suggestedExperienceIndexes(experienceOptions, targetRole, reviewLevel);
-  const keptProjects =
-    selectedProjects ?? suggestedProjectIndexes(projectOptions, targetRole);
+  const keptExperience = selectedExperience ?? suggestedExperienceIndexes(experienceOptions, targetRole, reviewLevel);
+  const keptProjects = selectedProjects ?? projectOptions.map((_, index) => index);
   const selectedJobs = keptExperience.map((index) => experienceOptions[index]);
   const bulletLimitFor = (index) =>
     experienceBulletLimit(selectedJobs, keptExperience.indexOf(index));
@@ -1370,7 +1367,9 @@ function App() {
     } catch (error) { setError(error.message); }
     finally { setBusy(false); }
   }
+  const reviewInFlight = useRef(false);
   async function analyze(sample = demoMode) {
+    if (reviewInFlight.current) return;
     setError("");
     setFeedbackDetails({});
     setPositiveFeedback({});
@@ -1386,6 +1385,7 @@ function App() {
       );
       return;
     }
+    reviewInFlight.current = true;
     go("grading");
     setBusy(true);
     setReviewProgress(0);
@@ -1394,12 +1394,7 @@ function App() {
     const timer = setInterval(() => {
       const seconds = Math.floor((Date.now() - startedAt) / 1000);
       setReviewSeconds(seconds);
-      setReviewProgress(
-        Math.min(
-          95,
-          Math.floor(95 * (1 - Math.exp(-seconds / (sample ? 0.8 : 35)))),
-        ),
-      );
+      setReviewProgress(current => Math.max(current, Math.min(95, Math.floor(95 * (1 - Math.exp(-seconds / (sample ? 0.8 : 35)))))));
     }, 1000);
     try {
       let result;
@@ -1463,6 +1458,7 @@ function App() {
       go("home");
       setTimeout(() => setError(e.message), 0);
     } finally {
+      reviewInFlight.current = false;
       clearInterval(timer);
       setBusy(false);
     }
@@ -1690,7 +1686,7 @@ function App() {
               : entry;
         })
         .join("\n\n");
-      for (const addedRole of [newExperience, newExperience.secondRole].filter(role => newExperience.enabled && role?.enabled && role.replaceOldest !== false)) {
+      for (const addedRole of [newExperience, newExperience.secondRole].filter(role => newExperience.enabled && shouldReplaceOldestExperience(role))) {
         const before = experienceList(chosenResume.experience);
         chosenResume.experience = removeOldestExperience(chosenResume.experience);
         const after = experienceList(chosenResume.experience);
@@ -1781,8 +1777,9 @@ function App() {
         setAddedRepoSkills(
           newlyListedSkills(review.resume.skills, normalized.resume.skills),
         );
-        if (data.protectedChanges?.length || data.approvalQuestions?.length) {
-          setProposal(normalized);
+        setProposal(normalized);
+        setProposalApproved(false);
+        if (data.protectedChanges?.length) {
           go("approval");
           return;
         }
@@ -2562,12 +2559,9 @@ function App() {
       if (Object.hasOwn(saved, "otherPriority"))
         setOtherPriority(saved.otherPriority);
       if (Object.hasOwn(saved, "answers")) setAnswers(saved.answers);
-      if (Object.hasOwn(saved, "profileLinkedin"))
-        setProfileLinkedin(saved.profileLinkedin);
-      if (Object.hasOwn(saved, "profileGithub"))
-        setProfileGithub(saved.profileGithub);
-      if (Object.hasOwn(saved, "projectDemoUrl"))
-        setProjectDemoUrl(saved.projectDemoUrl);
+      if (Object.hasOwn(saved, "profileLinkedin")) setProfileLinkedin(saved.profileLinkedin);
+      if (Object.hasOwn(saved, "profileGithub")) setProfileGithub(saved.profileGithub || saved.review?.resume?.contact?.github || githubProfileFromProjects(saved.review?.resume?.projects || ""));
+      if (Object.hasOwn(saved, "projectDemoUrl")) setProjectDemoUrl(saved.projectDemoUrl);
       if (Object.hasOwn(saved, "linkDiscoveryNote"))
         setLinkDiscoveryNote(saved.linkDiscoveryNote);
       if (Object.hasOwn(saved, "profilePortfolio"))
@@ -2597,7 +2591,7 @@ function App() {
       setEditSection(null);
       setModal(null);
       setCreateDetails(saved.createDetails || blankResumeDetails());
-      go(saved.page === "upload-preview" && !result.file ? "home" : saved.page);
+      if (saved.page === "approval" && saved.proposal?.resume && !saved.proposal.protectedChanges?.length) { setResume(normalizeResume(saved.proposal.resume)); go("edit"); } else go(saved.page === "upload-preview" && !result.file ? "home" : saved.page);
       setProgressMessage("Your saved progress is ready.");
       return true;
     } catch (error) {
@@ -2728,8 +2722,7 @@ function App() {
               setAiResume(null);
               go(
                 saved.build
-                  ? saved.build.protectedChanges?.length ||
-                    saved.build.approvalQuestions?.length
+                  ? saved.build.protectedChanges?.length
                     ? "approval"
                     : "edit"
                   : "format",
@@ -2888,9 +2881,7 @@ function App() {
                         setLayout("");
                         setAiResume(null);
                         setCoverLetter("");
-                        setProfileGithub(
-                          data.review.resume?.contact?.github || "",
-                        );
+                        setProfileGithub(data.review.resume?.contact?.github || githubProfileFromProjects(data.review.resume?.projects || ""));
                         setProfileLinkedin(
                           data.review.resume?.contact?.linkedin || "",
                         );
@@ -3662,7 +3653,7 @@ function App() {
                   {codingChoice === true && (
                     <p role="status">
                       {requiresProjects(reviewLevel)
-                        ? "Use exactly 3 real projects and list the technologies used."
+                        ? "Keep relevant real projects and list the technologies used; more than three is fine."
                         : "Projects are optional at your level; list the technologies for any you include."}{" "}
                       A repo or demo link helps show the work, but you can
                       continue without one.
@@ -4353,7 +4344,7 @@ function App() {
                                 ? seniorExperience
                                   ? "choose 4–6"
                                   : "choose 3–4"
-                                : "choose 3"}
+                                : "choose relevant projects"}
                             </small>
                           </h3>
                           {label === "Experience" && (
@@ -4888,7 +4879,7 @@ function App() {
                 }}
               >
               {technicalOptions && <NewProjectFields value={newProjects} onChange={setNewProjects} />}
-              <NewExperienceFields value={newExperience} onChange={setNewExperience} hasExperience={experienceOptions.length > 0} />
+              <NewExperienceFields demo={demo} value={newExperience} onChange={setNewExperience} hasExperience={experienceOptions.length > 0} />
                 {projectOptions
                   .map((project, index) => ({ project, index }))
                   .filter(
@@ -5034,7 +5025,7 @@ function App() {
                       <div className="field">
                         <label htmlFor={q.id}>
                           {q.question}
-                          {q.required ? " · HIGHLY RECOMMENDED" : " · Optional"}
+                          {/city.*state|city.*region/i.test(q.question) ? <span className="location-recommended"> · RECOMMENDED</span> : q.required ? " · HIGHLY RECOMMENDED" : " · Optional"}
                         </label>
                         <p>{q.hint}</p>
                         <textarea
@@ -5107,14 +5098,7 @@ function App() {
                 subtitle="Check the draft before accepting it."
               />
               <section className="card questions">
-                {(proposal.approvalQuestions || []).map((q, i) => (
-                  <div className="question" key={i}>
-                    <div>
-                      <h3>{q.question}</h3>
-                      <p>{q.hint}</p>
-                    </div>
-                  </div>
-                ))}
+
                 {(proposal.protectedChanges || []).map((change) => (
                   <div
                     className="question"
@@ -5203,6 +5187,11 @@ function App() {
                 title="Your resume, piece by piece"
                 subtitle="Check the facts and edit the wording."
               />
+              {proposal?.approvalQuestions?.length > 0 && <details className="card optional-draft-questions">
+                <summary>Optional details to strengthen your resume</summary>
+                <p>You can keep editing or continue. Add any details you know using the section’s Edit button below.</p>
+                {proposal.approvalQuestions.map((q, i) => <div key={i}><h3>{q.question}</h3>{q.hint && <p>{q.hint}</p>}</div>)}
+              </details>}
               <div className="editor-layout">
                 <section className="section-list">
                   {resumeSections(reviewLevel)
@@ -5252,12 +5241,12 @@ function App() {
                           requiresProjects(reviewLevel) && (
                             <small
                               className={
-                                projectList(resume.projects).length === 3
+                                projectList(resume.projects).length >= 3
                                   ? "muted"
                                   : "invalid"
                               }
                             >
-                              {projectList(resume.projects).length} / 3 projects
+                              {projectList(resume.projects).length} projects
                             </small>
                           )}
                         {key === "projects" &&
@@ -5272,14 +5261,7 @@ function App() {
                         {key === "projects" &&
                           projectList(resume.projects).length > 0 && (
                             <small
-                              className={
-                                projectList(resume.projects).some(
-                                  (project) =>
-                                    projectDescriptionWords(project) > 45,
-                                )
-                                  ? "invalid"
-                                  : "muted"
-                              }
+                              className="muted"
                             >
                               Project descriptions:{" "}
                               {projectList(resume.projects)
@@ -5287,8 +5269,7 @@ function App() {
                                   projectDescriptionWords(project),
                                 )
                                 .join(", ")}{" "}
-                              words · Aim for 35–40; up to 45 for larger
-                              projects
+                              words · Use the detail needed to explain your work
                             </small>
                           )}
                       {key === "projects" && !demo && <ProjectWordingSuggestion value={resume.projects} onChange={projects => setResume(current => ({ ...current, projects }))} />}

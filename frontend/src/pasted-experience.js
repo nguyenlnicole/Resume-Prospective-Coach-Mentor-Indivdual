@@ -6,7 +6,7 @@ export function cleanExperienceDescription(text = '') {
   return text.split(/\r?\n/).map(line => line
     .replace(/^\s*[^\n]*?\s+[·•]\s*(?:on-site|hybrid|remote)\b(?:\s*[-–—•]\s*)?/i, '')
     .replace(/^\s*Location\s*:[^\n]*$/i, '')
-  ).filter(line => line.trim() && !/^\s*(?:Thumbnail for |.* logo\s*$)/i.test(line)).join('\n').trim();
+  ).filter(line => line.trim() && !/^\s*(?:remote|on-site|hybrid|present|current)\s*$/i.test(line) && !/^\s*(?:Thumbnail for |.* logo\s*$)/i.test(line)).join('\n').trim();
 }
 export function pastedExperience(text = '') {
   const lines = text.slice(0, 12000).split(/\r?\n/).map(line => line.trim().replace(/\\$/g, '').replace(/^\\(?=[-•])/, '').replace(/\*\*/g, '').trim()).filter(Boolean);

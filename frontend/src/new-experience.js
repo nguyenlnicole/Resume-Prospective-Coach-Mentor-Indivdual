@@ -1,11 +1,17 @@
+import { pastedExperience, cleanExperienceDescription } from './pasted-experience.js';
 const completeMonth = value => /^\d{4}-(0[1-9]|1[0-2])$/.test(value || '');
 import { experienceList } from './rules.js';
 
+export function experienceWordCount(text = '') {
+  const description = pastedExperience(text)?.description ?? cleanExperienceDescription(text);
+  return description.trim().split(/\s+/).filter(word => /[\p{L}\p{N}]/u.test(word)).length;
+}
+
 export function newExperienceError(value) {
   if (!value.enabled) return '';
-  if (!value.role?.trim() || !value.employer?.trim()) return 'Enter the role and employer or organization.';
-  if (!value.description?.trim()) return 'Add a few words about your work so we can write accurate bullet points.';
-  if (!completeMonth(value.start) || (!value.current && !completeMonth(value.end))) return 'Enter a start date and either an end date or select that you still work there.';
+  if (!value.role?.trim() || !value.employer?.trim()) return 'Put the job title, company, and date range on separate lines, followed by what you did.';
+  if (/^https?:\/\/\S+$/i.test(value.description?.trim() || '') || experienceWordCount(value.description) < 10) return 'Describe what you did in at least 10 words. Paste the experience text, not a profile link.';
+  if (!completeMonth(value.start) || (!value.current && !completeMonth(value.end))) return 'Include start and end months and years in the text, such as May 2024 - August 2025, or May 2024 - Present.';
   const today = new Date();
   const currentMonth = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`;
   if (value.start > currentMonth || (!value.current && value.end > currentMonth)) return 'Experience dates cannot be in the future.';
@@ -24,3 +30,5 @@ export function removeOldestExperience(text) {
   }).filter(item => Number.isFinite(item.date)).sort((a,b) => a.date - b.date);
   return dated.length ? entries.filter((_,index) => index !== dated[0].index).join('\n\n') : text;
 }
+
+export const shouldReplaceOldestExperience = role => role?.enabled === true && role.replaceOldest === true;

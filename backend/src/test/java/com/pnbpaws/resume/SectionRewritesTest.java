@@ -62,6 +62,7 @@ class SectionRewritesTest {
           else if(field.equals("contact"))resume.set(field,input.path("resume").path(field).deepCopy());
           else resume.put(field,input.path("resume").path(field).asText());
         });
+        result.set("resume", ResumeCleanup.normalize(resume));
         result.putArray("approvalQuestions");return result;
       }
     };
@@ -70,7 +71,12 @@ class SectionRewritesTest {
       var input=mapper.createObjectNode();var resume=input.putObject("resume");resume.putObject("contact").put("name","Example");
       resume.put("experience","Employer - Engineer | 2020-Present\n- Built services.").put("projects","Project A\n- Built a tool.");
       input.put("targetRole","Engineer");input.putArray("preferences").add("Clear wording");
-      var cache=new SectionRewrites.Cache();ai.build(input,"Junior",cache);ai.build(input,"Junior",cache);
+      var cache=new SectionRewrites.Cache();
+      var built=ai.build(input,"Junior",cache);
+      assertEquals(SUMMARY,built.path("resume").path("summary").asText());
+      assertFalse(built.path("resume").path("experience").asText().isBlank());
+      assertFalse(built.path("resume").path("projects").asText().isBlank());
+      ai.build(input,"Junior",cache);
       assertTrue(calls.values().stream().allMatch(n->n.get()==1));
       resume.put("projects","Project A\n- Built a different tool.");ai.build(input,"Junior",cache);
       assertEquals(1,calls.get("experience").get());assertEquals(2,calls.get("projects").get());assertEquals(2,calls.get("summary").get());

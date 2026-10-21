@@ -762,16 +762,12 @@ export function validateResume(r, level) {
   }
   const projects = projectList(r.projects);
   if (codingRequired(r) && requiresProjects(level)) {
-    if (projects.length !== 3)
+    if (projects.length < 3)
       errors.push(
-        "Include exactly 3 projects for a junior or mid-level resume.",
+        "Consider at least 3 projects for a junior or mid-level resume; more are welcome.",
       );
   }
-  for (const project of projectList(r.projects))
-    if (projectDescriptionWords(project) > 45)
-      errors.push(
-        "Aim for 35–40 words per project; larger projects may use up to 45 words, apart from the title, links, and technology line.",
-      );
+
   return [...new Set(errors)];
 }
 export function plainLines(r) {

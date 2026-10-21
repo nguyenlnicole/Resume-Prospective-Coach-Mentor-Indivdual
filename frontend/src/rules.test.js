@@ -325,16 +325,14 @@ test("experience bullet count is checked without blocking on word length", () =>
     ),
   );
 });
-test("project description cap excludes the heading, link, and technology line", () => {
-  const project =
-    "Care app | https://github.com/example/care\nTech: Java, React\n" +
-    "built ".repeat(45);
+test("long project descriptions remain allowed and counts exclude the heading", () => {
+  const project = "Care app | https://github.com/example/care\nTech: Java, React\n" + "built ".repeat(45);
   assert.equal(projectDescriptionWords(project), 45);
   const resume = structuredClone(sampleResume);
   resume.projects =
     project + "extra\n\n" + resume.projects.split("\n\n").slice(1).join("\n\n");
   assert.ok(
-    validateResume(resume, "Mid-level").some((message) =>
+    !validateResume(resume, "Mid-level").some((message) =>
       message.includes("45 words"),
     ),
   );
@@ -454,12 +452,12 @@ test("project technologies stay with links and missing facts are requested", () 
     ),
   );
 });
-test("junior coding resumes still need three real projects", () => {
+test("junior coding resumes allow more than three projects", () => {
   let r = structuredClone(sampleResume);
   r.projects += "\n\nAnother app | https://example.com/demo\nBuilt an app.";
   assert.ok(
-    validateResume(r, "Entry / Junior").some((x) =>
-      x.includes("exactly 3 projects"),
+    !validateResume(r, "Entry / Junior").some((x) =>
+      x.includes("at least 3 projects"),
     ),
   );
 });
@@ -480,13 +478,13 @@ test("senior and management projects are optional", () => {
   assert.deepEqual(validateResume(r, "Senior"), []);
   assert.deepEqual(validateResume(r, "Management"), []);
 });
-test("junior and mid-level require exactly three projects", () => {
+test("junior and mid-level recommend at least three projects", () => {
   for (const level of ["Entry / Junior", "Mid-level"]) {
     const r = structuredClone(sampleResume);
     const projects = r.projects.split("\n\n");
-    for (const count of [0, 1, 2, 4]) {
+    for (const count of [0, 1, 2]) {
       r.projects = [...projects, projects[0]].slice(0, count).join("\n\n");
-      assert.ok(validateResume(r, level).some((e) => e.includes("exactly 3")));
+      assert.ok(validateResume(r, level).some((e) => e.includes("at least 3")));
     }
     r.projects = projects.join("\n\n");
     assert.deepEqual(validateResume(r, level), []);

@@ -15,9 +15,13 @@ class NewExperienceTest {
         .put("description", "Taught students and prepared lessons. ".repeat(10));
     return data;
   }
-  @Test void acceptsShortNotesAndRequiresValidDates() {
+  @Test void requiresTenWordsAndValidDates() {
     ObjectNode data = data();
     ((ObjectNode)data.path("newExperience")).put("description", "Taught students.");
+    assertThrows(ResponseStatusException.class, () -> NewExperience.validate(data));
+    ((ObjectNode)data.path("newExperience")).put("description", "word ".repeat(9));
+    assertThrows(ResponseStatusException.class, () -> NewExperience.validate(data));
+    ((ObjectNode)data.path("newExperience")).put("description", "I taught students reading daily and prepared their weekly lessons.");
     assertDoesNotThrow(() -> NewExperience.validate(data));
     ((ObjectNode)data.path("newExperience")).put("description", "");
     assertThrows(ResponseStatusException.class, () -> NewExperience.validate(data));

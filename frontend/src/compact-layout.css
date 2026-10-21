@@ -2374,21 +2374,8 @@ main:not(.page-home):not(.page-admin):not(.page-forgot):not(.page-reset)
   box-shadow: inset 0 1px 4px #34567a12;
   overflow: hidden;
 }
-.review-progress-fill {
-  min-width: 22px;
-  height: 100%;
-  border-radius: 17.6px;
-  background: linear-gradient(90deg, #c6e7fa, #8ab9e4, #688ec2);
-  position: relative;
-  transition: width 1s ease;
-}
-.review-progress-fill svg {
-  position: absolute;
-  right: 2px;
-  top: -2px;
-  color: #254574;
-  fill: #e9f7ff;
-}
+.review-progress-fill { min-width: 22px; height: 100%; border-radius: 17.6px; background: linear-gradient(90deg, #c6e7fa, #8ab9e4, #688ec2); position: relative; animation: none; transform: none; transition: width 250ms linear; }
+.review-progress-fill svg { position: absolute; right: 2px; top: 50%; transform: translateY(-50%); animation: none; transition: none; color: #254574; fill: #e9f7ff; }
 .app-shell .review-progress .review-progress-caption {
   font-size: 13.58px;
   line-height: 1.45;
@@ -4297,7 +4284,7 @@ main:not(.page-home):not(.page-admin):not(.page-forgot):not(.page-reset)
   flex-direction: column;
   gap: 16px;
   width: 100%;
-  max-width: 840px;
+  max-width: 1000px;
   box-sizing: border-box;
 }
 .builder-question-form > section,
@@ -4325,3 +4312,12 @@ main:not(.page-home):not(.page-admin):not(.page-forgot):not(.page-reset)
 .builder-question-form .experience-entry h3 { margin: 0; }
 .builder-question-form .experience-job-fields { display: flex; flex-direction: column; gap: 12px; border: 0; padding: 0; margin: 0; min-width: 0; }
 .builder-question-form .experience-job-fields:disabled { opacity: .65; }
+
+.app-shell .builder-question-form .experience-entry textarea { min-height: 180px; width: 100%; box-sizing: border-box; }
+.app-shell .location-recommended { color: #b42318; font-weight: 700; }
+
+.app-shell .builder-question-form .experience-entry .field { width: 100%; max-width: none; }
+
+.app-shell .project-wording-suggestion .project-wording-results { display: flex; flex-direction: column; align-items: stretch; gap: 16px; }
+.app-shell .project-wording-results > div { width: 100%; min-width: 0; }
+.app-shell .project-wording-results > button { align-self: flex-start; width: auto; max-width: 100%; white-space: normal; word-break: normal; }
