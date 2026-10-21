@@ -37,4 +37,25 @@ class NewExperienceTest {
     result.putObject("resume").put("experience", "Existing role");
     assertThrows(ResponseStatusException.class, () -> NewExperience.append(data(), result));
   }
+
+  @Test void keepsTwoRolesAndTheirBulletsSeparateNewestFirst() {
+    ObjectNode data = data();
+    ObjectNode second = ((ObjectNode)data.path("newExperience")).putObject("secondRole");
+    second.put("enabled", true).put("role", "Assistant").put("employer", "Library")
+        .put("start", "2020-01").put("end", "2022-02").put("current", false)
+        .put("description", "Helped visitors find books daily. ".repeat(10));
+    assertDoesNotThrow(() -> NewExperience.validate(data));
+    ObjectNode result = mapper.createObjectNode();
+    result.putObject("resume").put("experience", "Existing role");
+    result.putArray("newExperienceBullets").add("Taught students.");
+    result.putArray("newExperienceSecondBullets").add("Helped library visitors.");
+    NewExperience.append(data, result);
+    String experience = result.path("resume").path("experience").asText();
+    assertTrue(experience.indexOf("Teacher") < experience.indexOf("Assistant"));
+    assertTrue(experience.indexOf("Taught students.") < experience.indexOf("Assistant"));
+    assertTrue(experience.indexOf("Helped library visitors.") > experience.indexOf("Assistant"));
+    assertTrue(experience.contains("January 2020 \u2013 February 2022"), experience);
+    second.put("description", "Too short");
+    assertThrows(ResponseStatusException.class, () -> NewExperience.validate(data));
+  }
 }

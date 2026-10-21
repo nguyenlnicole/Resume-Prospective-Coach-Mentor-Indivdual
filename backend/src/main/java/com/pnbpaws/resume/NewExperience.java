@@ -13,6 +13,19 @@ final class NewExperience {
 
   static void validate(JsonNode data) {
     if (!enabled(data)) return;
+    validateOne(data);
+    JsonNode second = data.path("newExperience").path("secondRole");
+    if (second.path("enabled").asBoolean(false)) {
+      if (second.path("secondRole").path("enabled").asBoolean(false))
+        throw new ResponseStatusException(BAD_REQUEST, "Add at most two new roles.");
+      ObjectNode secondData = data.deepCopy();
+      secondData.set("newExperience", second);
+      validateOne(secondData);
+    }
+  }
+
+  private static void validateOne(JsonNode data) {
+    if (!enabled(data)) return;
     JsonNode value = data.path("newExperience");
     for (String key : new String[]{"role", "employer"}) {
       String text = value.path(key).asText().strip();
@@ -35,6 +48,26 @@ final class NewExperience {
   }
 
   static ObjectNode append(JsonNode data, ObjectNode result) {
+    if (!enabled(data)) return result;
+    JsonNode first = data.path("newExperience");
+    JsonNode second = first.path("secondRole");
+    var roles = new java.util.ArrayList<JsonNode>();
+    roles.add(first);
+    if (second.path("enabled").asBoolean(false)) roles.add(second);
+    JsonNode firstBullets = result.path("newExperienceBullets").deepCopy();
+    JsonNode secondBullets = result.path("newExperienceSecondBullets").deepCopy();
+    roles.sort(java.util.Comparator.comparing((JsonNode role) -> role.path("current").asBoolean(false) ? "9999" : role.path("end").asText()).thenComparing(role -> role.path("start").asText()));
+    for (JsonNode role : roles) {
+      ObjectNode roleData = data.deepCopy();
+      roleData.set("newExperience", role);
+      result.set("newExperienceBullets", role == first ? firstBullets : secondBullets);
+      appendOne(roleData, result);
+    }
+    result.remove("newExperienceSecondBullets");
+    return result;
+  }
+
+  private static ObjectNode appendOne(JsonNode data, ObjectNode result) {
     if (!enabled(data)) return result;
     JsonNode value = data.path("newExperience");
     JsonNode bullets = result.path("newExperienceBullets");

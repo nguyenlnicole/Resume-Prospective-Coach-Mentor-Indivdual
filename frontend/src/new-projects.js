@@ -11,8 +11,36 @@ export async function fetchProjectDetails(url) {
   const response = await fetch(root, { signal: AbortSignal.timeout(8000), headers: { Accept: 'application/vnd.github+json' } });
   if (!response.ok) throw new Error('This repository could not be read. Check that it is public, try later, or enter the details yourself.');
   const repo = await response.json();
-  const technologies = await inspectGithubRepository(url).catch(() => []);
-  return { name: String(repo.name || id[1]).slice(0,160), description: String(repo.description || '').slice(0,4000), stack: technologies.join(', '), demo: safeProjectUrl(repo.homepage), repo: `https://github.com/${id.join('/')}`, confirmed: false };
+  const optionalJson = async path => {
+    try {
+      const response = await fetch(`${root}/${path}`, { signal: AbortSignal.timeout(8000), headers: { Accept: 'application/vnd.github+json' } });
+      return response.ok ? await response.json() : null;
+    } catch { return null; }
+  };
+  const [technologies, readme, commits] = await Promise.all([
+    inspectGithubRepository(url).catch(() => []), optionalJson('readme'),
+    optionalJson(`commits?author=${encodeURIComponent(id[0])}&per_page=20`),
+  ]);
+  let overview = '';
+  if (readme?.encoding === 'base64' && readme.size <= 100000 && typeof readme.content === 'string') {
+    try {
+      const markdown = new TextDecoder().decode(Uint8Array.from(atob(readme.content.replace(/\s/g, '')), c => c.charCodeAt(0)));
+      overview = markdown.replace(/```[\s\S]*?```/g, '').replace(/<!--[\s\S]*?-->/g, '').split(/\n\s*\n/)
+        .map(block => block.replace(/!\[[^\]]*\]\([^)]*\)/g, '').replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/<[^>]*>/g, '').replace(/[*_`]/g, '').trim())
+        .find(block => block.length >= 40 && !/^(#|[>|]|npm |git |pip |https?:)/i.test(block)) || '';
+    } catch { overview = ''; }
+  }
+  const contributions = Array.isArray(commits) ? [...new Set(commits
+    .filter(commit => commit.author?.login?.toLowerCase() === id[0].toLowerCase())
+    .map(commit => String(commit.commit?.message || '').split('\n')[0].trim())
+    .filter(message => message.length >= 12 && !/^(merge|initial commit|update readme|bump|chore|dependabot)\b/i.test(message)))].slice(0, 3) : [];
+  return {
+    name: String(repo.name || id[1]).slice(0,160),
+    description: String(repo.description || overview).slice(0,4000),
+    contribution: contributions.length ? `Work recorded for ${id[0]}: ${contributions.join('; ')}.` : '',
+    importNote: contributions.length ? `Contribution draft comes from commits by ${id[0]}. Keep only work you personally did, edit the wording, and confirm all details.` : 'No clear personal contribution was available from GitHub. Add what you personally built, review the other details, and confirm.',
+    stack: technologies.join(', '), demo: safeProjectUrl(repo.homepage), repo: `https://github.com/${id.join('/')}`, confirmed: false,
+  };
 }
 
 export function newProjectsError(projects) {

@@ -7,7 +7,7 @@ export function newExperienceError(value) {
   if ((value.description?.trim().split(/\s+/).filter(Boolean).length || 0) < 50) return 'Describe your new experience in at least 50 words.';
   if (!completeMonth(value.start) || (!value.current && !completeMonth(value.end))) return 'Enter a start date and either an end date or select that you still work there.';
   if (!value.current && value.end < value.start) return 'The end date must be on or after the start date.';
-  return '';
+  return value.secondRole?.enabled ? newExperienceError(value.secondRole) : '';
 }
 
 export function removeOldestExperience(text) {

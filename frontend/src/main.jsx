@@ -1686,7 +1686,7 @@ function App() {
               : entry;
         })
         .join("\n\n");
-      if (newExperience.enabled && newExperience.replaceOldest !== false) {
+      for (const addedRole of [newExperience, newExperience.secondRole].filter(role => newExperience.enabled && role?.enabled && role.replaceOldest !== false)) {
         const before = experienceList(chosenResume.experience);
         chosenResume.experience = removeOldestExperience(chosenResume.experience);
         const after = experienceList(chosenResume.experience);
@@ -1745,10 +1745,10 @@ function App() {
         };
         if (answers.outcome?.trim() && answers.outcome !== "Not sure")
           next.experience += "\n• " + answers.outcome.trim();
-        if (newExperience.enabled) {
+        for (const role of [newExperience, newExperience.secondRole].filter(role => newExperience.enabled && role?.enabled).sort((a,b) => (a.current ? "9999" : a.end).localeCompare(b.current ? "9999" : b.end) || a.start.localeCompare(b.start))) {
           const month = value => new Date(`${value}-01T12:00:00`).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-          const heading = `${newExperience.employer} — ${newExperience.role} | ${month(newExperience.start)} – ${newExperience.current ? 'Present' : month(newExperience.end)}`;
-          next.experience = `${heading}\n• ${newExperience.description.trim()}\n\n${next.experience}`;
+          const heading = `${role.employer} — ${role.role} | ${month(role.start)} – ${role.current ? 'Present' : month(role.end)}`;
+          next.experience = `${heading}\n• ${role.description.trim()}\n\n${next.experience}`;
         }
         setResume(normalizeResume(next));
       } else {

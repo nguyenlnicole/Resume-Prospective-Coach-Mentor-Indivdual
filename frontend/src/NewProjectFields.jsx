@@ -14,7 +14,7 @@ function ProjectFields({ value, onChange, onRemove, index }) {
       const details = await fetchProjectDetails(value.repo);
       if (request.current !== token) return;
       onChange({ ...value, ...details });
-      setMessage('Available details filled in. Check them, add your own contribution, and confirm. GitHub does not prove which work you did.');
+      setMessage(details.importNote);
     } catch (error) { if (request.current === token) setMessage(error.message); }
     finally { if (request.current === token) setLoading(false); }
   }
@@ -29,7 +29,7 @@ function ProjectFields({ value, onChange, onRemove, index }) {
       <input id={`${prefix}-repo`} type="url" value={value.repo || ''} onChange={e => update('repo',e.target.value)} onBlur={() => { if (value.repo?.trim()) lookup(); }} placeholder="https://github.com/yourname/project" />
       <button type="button" className="text-button" disabled={loading} onClick={lookup}>{loading ? 'Reading GitHub…' : 'Fill details from GitHub'}</button>
     </div> : <p>Please add this project to your GitHub when you can, then include its repository link. You can still add it to your resume now.</p>}
-    {message && <p role="status">{message}</p>}
+    {(message || value.importNote) && <p role="status">{message || value.importNote}</p>}
     {[
       ['name','Project name',false], ['description','What does the project do?',true],
       ['contribution','What did you personally build or contribute? Include real results if known.',true],

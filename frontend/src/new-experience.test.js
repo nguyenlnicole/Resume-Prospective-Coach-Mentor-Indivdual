@@ -22,3 +22,10 @@ test('does not guess at the age of undated or current experience', () => {
   const text = 'School — Teacher | Present\n• Taught.';
   assert.equal(removeOldestExperience(text), text);
 });
+
+test('each of two new roles needs its own complete details', () => {
+  const role = {enabled:true,role:'Teacher',employer:'School',description:'word '.repeat(50),start:'2024-08',current:true};
+  assert.equal(newExperienceError({...role,secondRole:{...role}}), '');
+  assert.match(newExperienceError({...role,secondRole:{...role,description:'Short'}}), /50 words/);
+  assert.equal(newExperienceError({...role,secondRole:{enabled:false}}), '');
+});
