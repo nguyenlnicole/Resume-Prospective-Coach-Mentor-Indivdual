@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  normalizeResume,
   countWords,
   briefFeedback,
   githubUsername,
@@ -735,4 +736,12 @@ test("project link styles use the requested short and project-named labels", () 
       "[Repo](https://github.com/example/everpure)",
     ),
   );
+});
+
+test('standalone markdown repo links move into the heading without duplicate body links', () => {
+ const url='https://github.com/example/traffic-controller';
+ const result=normalizeResume({...sampleResume,projects:`Traffic Light Controller | [Repo](${url})\n[GitHub Repo](${url})\nBuilt a sensor-controlled traffic system.`}).projects;
+ assert.equal(result.split(url).length-1,1);
+ assert.ok(!result.includes('GitHub Repo'));
+ assert.ok(result.includes('Built a sensor-controlled traffic system.'));
 });

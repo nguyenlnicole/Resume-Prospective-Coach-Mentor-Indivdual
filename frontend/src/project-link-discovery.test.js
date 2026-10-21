@@ -153,3 +153,9 @@ test("URL questions are optional without weakening other questions", () => {
     false,
   );
 });
+
+test('hyphenated titles retain their full name for repository matching', () => {
+ const url='https://github.com/example/hydrogen-fuel-cell-rover';
+ assert.deepEqual(matchProjectLinks(['Hydrogen-Fuel-Cell Rover'],[{name:'hydrogen-fuel-cell-rover',html_url:url}]),{0:[url]});
+ assert.deepEqual(matchProjectLinks(['Traffic Light Controller'],[{name:'applied-ai-system-project',html_url:'https://github.com/example/applied-ai-system-project'}]),{});
+});

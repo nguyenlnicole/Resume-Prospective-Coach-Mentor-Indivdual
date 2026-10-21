@@ -357,12 +357,8 @@ export const normalizeProjectHeadings = (projects = "") =>
       const urls = new Set(projectLinkUrls(lines[0]));
       const extraUrls = [];
       const body = lines.slice(1).filter((line) => {
-        if (
-          !/^\s*(?:demo|live demo|repository|repo|github|links?)\s*:/i.test(
-            line,
-          )
-        )
-          return true;
+      const linkOnly = line.replace(/\[[^\]]*\]\(https?:\/\/[^)]+\)/g, '').replace(/https?:\/\/[^\s|)]+/g, '').replace(/\b(?:github|gitlab|bitbucket|repo(?:sitory)?|live|demo|links?)\b/gi, '').replace(/[\s:|•*–—-]/g, '') === '';
+      if (!linkOnly && !/^\s*(?:demo|live demo|repository|repo|github(?: repo)?|links?)\s*:/i.test(line)) return true;
         const found = [...line.matchAll(/https?:\/\/[^\s|)]+/g)].map(
           (m) => m[0],
         );

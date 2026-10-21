@@ -12,7 +12,8 @@ class ProjectParagraphTest {
         assertEquals("RP | GitHub", input.path("title").asText());
         assertTrue(prompt.contains("do not repeat the project title"));
         assertTrue(prompt.contains("no 45-word cap"));
-        assertTrue(prompt.contains("work experience is limited"));
+        assertTrue(prompt.contains("one complete sentence of about 25-30 words"));
+        assertTrue(prompt.contains("work experience is clearly limited"));
         assertEquals("One internship",input.path("experience").asText());
         return mapper.createObjectNode().put("text", paragraph);
       }

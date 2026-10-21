@@ -70,7 +70,10 @@ class ResumeCleanup {
       List<String> body = new ArrayList<>();
       for (String line : lines.subList(1, lines.size())) {
         var matches = urls.matcher(line);
-        if (line.matches("(?i)^\\s*(?:demo|live demo|repository|repo|github|links?)\\s*:.*") && matches.find()) {
+        String remainder = line.replaceAll("\\[[^\\]]*\\]\\(https?://[^)]+\\)", "")
+            .replaceAll("https?://[^\\s|)]+", "").replaceAll("(?i)\\b(?:github|gitlab|bitbucket|repo(?:sitory)?|live|demo|links?)\\b", "")
+            .replaceAll("[\\s:|•*–—-]", "");
+        if ((remainder.isEmpty() || line.matches("(?i)^\\s*(?:demo|live demo|repository|repo|github(?: repo)?|links?)\\s*:.*")) && matches.find()) {
           do { String url = matches.group(); if (seen.add(url)) {
             String label = url.matches("(?i).*//(?:www\\.)?(?:github\\.com|gitlab\\.com|bitbucket\\.org)/.*") ? "GitHub" : "Demo";
             String link = " | ["+label+"]("+url+")";
