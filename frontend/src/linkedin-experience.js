@@ -1,3 +1,4 @@
+import { cleanExperienceDescription } from './pasted-experience.js';
 export function linkedinProfileUrl(value) {
   try {
     const url=new URL(value);
@@ -12,7 +13,7 @@ export function parseLinkedinExperience(text) {
   const matches=lines.map((line,index)=>({index,match:line.match(date)})).filter(item=>item.match && item.index>=2);
   return matches.slice(0,2).map((item,n)=>{
     const end=matches[n+1]?matches[n+1].index-2:lines.length;
-    return {role:lines[item.index-2],employer:lines[item.index-1].split(/\s+[·•]\s+/)[0],start:month(item.match[1]),end:month(item.match[2]),current:/^(present|current)$/i.test(item.match[2]),description:lines.slice(item.index+1,end).join('\n'),enabled:true,replaceOldest:false};
+    return {role:lines[item.index-2],employer:lines[item.index-1].split(/\s+[·•]\s+/)[0],start:month(item.match[1]),end:month(item.match[2]),current:/^(present|current)$/i.test(item.match[2]),description:cleanExperienceDescription(lines.slice(item.index+1,end).join('\n')),enabled:true,replaceOldest:false};
   });
 }
 

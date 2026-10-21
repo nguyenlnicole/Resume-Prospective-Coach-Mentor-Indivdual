@@ -34,6 +34,8 @@ class RegisteredAccounts {
     db.execute("ALTER TABLE registered_account ALTER COLUMN review_count SET DEFAULT 0");
     db.execute("ALTER TABLE registered_account ALTER COLUMN build_count SET DEFAULT 0");
     db.execute("CREATE TABLE IF NOT EXISTS workflow_draft (owner VARCHAR(254) PRIMARY KEY, snapshot CLOB NOT NULL, context CLOB NOT NULL, original_file BLOB, original_name VARCHAR(255), original_type VARCHAR(120), updated_at BIGINT NOT NULL)");
+    db.execute("CREATE TABLE IF NOT EXISTS saved_resume_owner (owner VARCHAR(254) PRIMARY KEY)");
+    db.execute("CREATE TABLE IF NOT EXISTS saved_workflow (owner VARCHAR(254) NOT NULL, id VARCHAR(36) NOT NULL, snapshot CLOB NOT NULL, context CLOB NOT NULL, original_file BLOB, original_name VARCHAR(255), original_type VARCHAR(120), updated_at BIGINT NOT NULL, PRIMARY KEY(owner,id))");
     db.execute("CREATE TABLE IF NOT EXISTS account_password_reset(token_hash VARCHAR(64) PRIMARY KEY,email VARCHAR(254) NOT NULL,expires BIGINT NOT NULL)");
   }
   @org.springframework.scheduling.annotation.Scheduled(fixedDelay = 60000)
@@ -169,6 +171,8 @@ class RegisteredAccounts {
     db.update("DELETE FROM account_password_reset WHERE email=?",email);
     db.update("DELETE FROM coach_saved_review WHERE owner=?",email);
     db.update("DELETE FROM workflow_draft WHERE owner=?",email);
+    db.update("DELETE FROM saved_workflow WHERE owner=?",email);
+    db.update("DELETE FROM saved_resume_owner WHERE owner=?",email);
   }
   JsonNode runTrial(HttpSession session,String operation,String level,String resumeEmail,Callable<JsonNode> task) throws Exception {
     String email=Objects.toString(session.getAttribute("coachEmail"),"");

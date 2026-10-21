@@ -78,4 +78,40 @@ class WorkflowDraftsTest {
     assertThrows(ResponseStatusException.class, () -> drafts.resumeReview("different-coach",first,new MockHttpSession()));
     assertTrue(history.list("coach").stream().allMatch(item -> Boolean.TRUE.equals(item.get("hasProgress"))));
   }
+  @Test void keepsTenDistinctResumesAllowsUpdatesAndDeletesOnlyTheSelectedOwnersEntry() throws Exception {
+    var drafts=service("jdbc:h2:mem:"+java.util.UUID.randomUUID()+";DB_CLOSE_DELAY=-1");
+    var ids=new java.util.ArrayList<String>();
+    var session=new MockHttpSession();
+    for(int i=0;i<10;i++) {
+      String id=java.util.UUID.randomUUID().toString(); ids.add(id);
+      var snapshot=mapper.createObjectNode().put("version",1).put("page","edit").put("draftId",id);
+      snapshot.putObject("resume").putObject("contact").put("name","Client "+i);
+      drafts.save("owner",snapshot.toString(),new MockMultipartFile("file","resume.pdf","application/pdf",new byte[]{(byte)i}),session);
+    }
+    assertEquals(10,drafts.list("owner").size());
+    String extra=mapper.createObjectNode().put("version",1).put("page","edit").put("draftId",java.util.UUID.randomUUID().toString()).toString();
+    assertThrows(ResponseStatusException.class,()->drafts.save("owner",extra,null,session));
+    String edit=mapper.createObjectNode().put("version",1).put("page","layout").put("draftId",ids.getFirst()).toString();
+    drafts.save("owner",edit,null,session);
+    assertEquals(10,drafts.list("owner").size());
+    assertTrue(drafts.resume("owner",ids.getFirst(),session).get("snapshot").toString().contains("layout"));
+    assertThrows(ResponseStatusException.class,()->drafts.delete("other",ids.get(1)));
+    assertThrows(ResponseStatusException.class,()->drafts.resume("other",ids.get(1),session));
+    drafts.delete("owner",ids.getFirst());
+    assertEquals(9,drafts.list("owner").size());
+    assertEquals("AQ==",((Map<?,?>)drafts.resume("owner",ids.get(1),session).get("file")).get("base64"));
+    drafts.save("owner",extra,null,session);
+    assertEquals(10,drafts.list("owner").size());
+  }
+  @Test void migratesOldSavedProgressOnceAndDoesNotResurrectDeletedResumes() throws Exception {
+    String url="jdbc:h2:mem:"+java.util.UUID.randomUUID()+";DB_CLOSE_DELAY=-1";
+    var drafts=service(url);
+    var db=new JdbcTemplate(new DriverManagerDataSource(url,"sa",""));
+    db.update("INSERT INTO workflow_draft(owner,snapshot,context,updated_at) VALUES(?,?,?,?)","owner",mapper.createObjectNode().put("version",1).put("page","edit").toString(),"{}",1L);
+    drafts=service(url);
+    assertEquals(1,drafts.list("owner").size());
+    assertTrue(drafts.resume("owner",new MockHttpSession()).get("snapshot").toString().contains("legacy"));
+    drafts.delete("owner","legacy");
+    assertEquals(0,service(url).list("owner").size());
+  }
 }

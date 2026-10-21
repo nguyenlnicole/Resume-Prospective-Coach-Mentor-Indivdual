@@ -26,11 +26,18 @@ class CoachSavedReviewsController {
   @GetMapping List<Map<String,Object>> list(HttpSession session) {
     return db.query("SELECT id,first_name,saved_at FROM coach_saved_review WHERE owner=? ORDER BY saved_at DESC", (r,i)->Map.of("id",r.getString(1),"firstName",r.getString(2),"savedAt",r.getLong(3)),owner(session));
   }
-  @PostMapping Map<String,String> save(HttpSession session) {
+  @org.springframework.transaction.annotation.Transactional
+  @PostMapping public Map<String,String> save(HttpSession session) {
     String coach=owner(session);
     Object reviewed=session.getAttribute("reviewResult");
     if (!(reviewed instanceof JsonNode review)) throw new ResponseStatusException(CONFLICT,"Review a resume first.");
     String id=Objects.toString(session.getAttribute("savedReviewId"),UUID.randomUUID().toString());
+    WorkflowDrafts.lockOwner(db,coach);
+    boolean exists=db.queryForObject("SELECT COUNT(*) FROM coach_saved_review WHERE owner=? AND id=?",Integer.class,coach,id)>0;
+    int count=db.queryForObject("SELECT COUNT(*) FROM coach_saved_review WHERE owner=?",Integer.class,coach)
+        +db.queryForObject("SELECT COUNT(*) FROM saved_workflow WHERE owner=?",Integer.class,coach);
+    if(!exists && count>=10) throw new ResponseStatusException(CONFLICT,"You have 10 saved resumes. Delete one from Saved before saving another.");
+    if(!exists) id=UUID.randomUUID().toString();
     var data=mapper.createObjectNode(); data.set("review",review);
     for(String key:List.of("reviewedLevel","reviewUserEmail","coachHistoryId","reviewFormatRating","reviewOverallRating"))
       data.put(key,Objects.toString(session.getAttribute(key),""));

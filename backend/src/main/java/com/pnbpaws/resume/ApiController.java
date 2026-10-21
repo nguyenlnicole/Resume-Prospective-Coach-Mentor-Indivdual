@@ -494,13 +494,13 @@ class ApiController {
     if (data.path("roleContext").toString().length() > 8_000)
       throw new ResponseStatusException(BAD_REQUEST, "Shorten the additional experience details.");
     admin.limit("build:" + req.getRemoteAddr(), 10);
-    return accounts.runTrial(req.getSession(), "build", selected, "", () -> ai.build(data, selected));
+    return accounts.runTrial(req.getSession(), "build", selected, "", () -> ai.build(data, selected, SectionRewrites.sessionCache(req.getSession())));
   }
 
   record ResumeInput(JsonNode resume, String level, String font, String dates, String linkColor) {}
 
   record AlternativeInput(JsonNode resume, String level, String jobDescription,
-      String targetRole, JsonNode roleContext) {}
+      String targetRole, JsonNode roleContext, boolean retry) {}
 
   @PostMapping("/resume/alternative")
   Map<String, JsonNode> alternative(@RequestBody AlternativeInput input, HttpServletRequest req) {
@@ -516,7 +516,7 @@ class ApiController {
       throw new ResponseStatusException(BAD_REQUEST, "Shorten the additional experience details.");
     admin.limit("alternative:" + req.getRemoteAddr(), 8);
     return Map.of("resume", ai.alternativeResume(input.resume(), input.level(),
-        input.jobDescription(), input.targetRole(), input.roleContext()));
+        input.jobDescription(), input.targetRole(), input.roleContext(), input.retry() ? new SectionRewrites.Cache() : SectionRewrites.sessionCache(req.getSession())));
   }
 
   @PostMapping("/resume/pdf")

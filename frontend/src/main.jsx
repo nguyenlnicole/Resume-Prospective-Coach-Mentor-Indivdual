@@ -1,3 +1,5 @@
+import { cleanExperienceDescription } from './pasted-experience.js';
+import { githubProfileFromProjects } from './github-profile.js';
 import ProjectWordingSuggestion from './ProjectWordingSuggestion.jsx';
 import { demoCreateDetails } from './demo-create-details.js';
 import CreateResume from './CreateResume.jsx';
@@ -5,7 +7,6 @@ import { blankResumeDetails, createResumeError, resumeFromDetails } from './crea
 import NewProjectFields from './NewProjectFields.jsx';
 import { newProjectsError, addNewProjects } from './new-projects.js';
 import NewExperienceFields from './NewExperienceFields.jsx';
-import LinkedinExperienceImport from './LinkedinExperienceImport.jsx';
 import { newExperienceError, removeOldestExperience } from './new-experience.js';
 import { visibleReviewFindings } from "./review-findings.js";
 import { demoJobUrl, demoJobTitle, demoJobDescription } from "./demo-job";
@@ -734,6 +735,7 @@ function App() {
   const [createDetails, setCreateDetails] = useState(blankResumeDetails);
   const restoringWorkflow = useRef(false);
   const [progressBusy, setProgressBusy] = useState(false);
+  const draftId = useRef(crypto.randomUUID());
   const [savedProgress, setSavedProgress] = useState(null);
   const [progressMessage, setProgressMessage] = useState("");
   useEffect(() => {
@@ -1200,6 +1202,7 @@ function App() {
   const experienceOptions = experienceList(review?.resume?.experience);
   const projectOptions = projectList(review?.resume?.projects);
   const repoTechnologyRequests = useRef(new Map());
+  const readyRepoTechnologies = useRef(new Map());
   const projectRepoKey = JSON.stringify(
     projectOptions.map((project, index) => ({
       project,
@@ -1213,19 +1216,18 @@ function App() {
     })),
   );
   useEffect(() => {
-    if (page !== "questions" || demo || !coding) return;
+    if (!["preferences", "questions"].includes(page) || demo || !technicalOptions) return;
     let active = true;
     setRepoChecks({});
     const timer = setTimeout(() => {
       for (const { project, index, repo } of JSON.parse(projectRepoKey)) {
-        if (!repo || (projectStacks[index] ?? projectStack(project)).trim())
-          continue;
+        if (!repo) continue;
         setRepoChecks((current) => ({
           ...current,
           [index]: { loading: true },
         }));
         if (!repoTechnologyRequests.current.has(repo)) {
-          const request = inspectGithubRepository(repo).catch((error) => {
+          const request = inspectGithubRepository(repo).then(technologies => { readyRepoTechnologies.current.set(repo, technologies); return technologies; }).catch((error) => {
             repoTechnologyRequests.current.delete(repo);
             throw error;
           });
@@ -1264,7 +1266,7 @@ function App() {
       active = false;
       clearTimeout(timer);
     };
-  }, [page, demo, coding, projectRepoKey]);
+  }, [page, demo, technicalOptions, projectRepoKey]);
   const seniorExperience = ["Senior", "Management"].includes(reviewLevel);
   const experienceMin = seniorExperience ? 4 : 3;
   const experienceMax = seniorExperience ? 6 : 4;
@@ -1316,6 +1318,7 @@ function App() {
       setError("Choose a resume file smaller than 10 MB.");
       return;
     }
+    draftId.current = crypto.randomUUID();
     setFile(f);
     setReview(null);
     setResume({
@@ -1422,7 +1425,7 @@ function App() {
       setResume(clone(result.resume));
       setAnswers({}); setNewExperience({}); setNewProjects([]);
       setProfileLinkedin(result.resume?.contact?.linkedin || "");
-      setProfileGithub(result.resume?.contact?.github || "");
+      setProfileGithub(result.resume?.contact?.github || githubProfileFromProjects(result.resume?.projects || ""));
       setProjectDemoUrl("");
       setLinkDiscoveryNote("");
       setProfilePortfolio(result.resume?.contact?.portfolio || "");
@@ -1713,26 +1716,11 @@ function App() {
         })
         .join("\n\n");
       if (technicalOptions) chosenResume.projects = addNewProjects(chosenResume.projects, newProjects);
-      const repoResults = demo
-        ? []
-        : await Promise.allSettled(
-            projectIndexes.map(async (index) => {
-              const links =
-                projectLinks[index] ??
-                projectLinkUrls(projectOptions[index]).join(" | ");
-              const repo = parseProjectLinks(links)
-                .map(normalizeWebLink)
-                .find((url) => githubRepository(url));
-              if (!repo) return [];
-              return (
-                repoTechnologyRequests.current.get(repo) ||
-                inspectGithubRepository(repo)
-              );
-            }),
-          );
-      const discoveredSkills = repoResults.flatMap((result) =>
-        result.status === "fulfilled" ? result.value : [],
-      );
+      const discoveredSkills = demo ? [] : projectIndexes.flatMap(index => {
+        const links = projectLinks[index] ?? projectLinkUrls(projectOptions[index]).join(" | ");
+        const repo = parseProjectLinks(links).map(normalizeWebLink).find(url => githubRepository(url));
+        return repo ? readyRepoTechnologies.current.get(repo) || [] : [];
+      });
       const skillUpdate = addRepositorySkills(
         chosenResume.skills,
         discoveredSkills,
@@ -1749,7 +1737,7 @@ function App() {
         for (const role of [newExperience, newExperience.secondRole].filter(role => newExperience.enabled && role?.enabled).sort((a,b) => (a.current ? "9999" : a.end).localeCompare(b.current ? "9999" : b.end) || a.start.localeCompare(b.start))) {
           const month = value => new Date(`${value}-01T12:00:00`).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
           const heading = `${role.employer} — ${role.role} | ${month(role.start)} – ${role.current ? 'Present' : month(role.end)}`;
-          next.experience = `${heading}\n• ${role.description.trim()}\n\n${next.experience}`;
+          next.experience = `${heading}\n• ${cleanExperienceDescription(role.description)}\n\n${next.experience}`;
         }
         setResume(normalizeResume(next));
       } else {
@@ -1774,7 +1762,7 @@ function App() {
             ]),
           ),
           combineExperience,
-          newExperience,
+          newExperience: {...newExperience, description: cleanExperienceDescription(newExperience.description), secondRole: newExperience.secondRole ? {...newExperience.secondRole, description: cleanExperienceDescription(newExperience.secondRole.description)} : undefined},
           newProjects: technicalOptions ? newProjects : [],
         });
         void refreshAccess();
@@ -1834,6 +1822,7 @@ function App() {
     setRepoChecks((current) => ({ ...current, [index]: { loading: true } }));
     try {
       const technologies = await inspectGithubRepository(repo);
+      readyRepoTechnologies.current.set(repo, technologies);
       if (technologies.length)
         setProjectStacks((current) =>
           (current[index] ?? projectStack(project)).trim()
@@ -1936,7 +1925,7 @@ function App() {
     setDates("right");
     go("preferences");
   }
-  async function generateAiVersion(source = resume) {
+  async function generateAiVersion(source = resume, retry = false) {
     if (demo) {
       const example = normalizeResume(clone(source));
       example.summary =
@@ -1963,7 +1952,7 @@ function App() {
         level: reviewLevel,
         jobDescription: jobDescription.trim(),
         targetRole: targetRole.trim(),
-        roleContext,
+        roleContext, retry,
       });
       if (requestId !== aiRequestId.current) return;
       setAiResume(
@@ -2296,7 +2285,7 @@ function App() {
       active = false;
     };
   }, [access.allowed, access.email]);
-  const workflowSnapshot = JSON.stringify({ createDetails,
+  const workflowSnapshot = JSON.stringify({ draftId: draftId.current, createDetails,
     version: 1,
     page,
     email,
@@ -2373,7 +2362,7 @@ function App() {
   const lastSavedWorkflow = useRef({ snapshot: "", file: null });
   const lastFailedWorkflow = useRef({ snapshot: "", file: null });
   async function saveWorkflowProgress(automatic = false) {
-    if (savingWorkflow.current) return;
+    if (savingWorkflow.current || (automatic && !file && !review && page === "home")) return;
     savingWorkflow.current = true;
     setProgressBusy(true);
     setProgressMessage("");
@@ -2396,12 +2385,13 @@ function App() {
         },
       );
       if (!automatic) setProgressMessage("Saved");
+      return true;
     } catch (error) {
       lastFailedWorkflow.current = attempted || {
         snapshot: workflowSnapshot,
         file,
       };
-      setProgressError(error.message);
+      setProgressError(error.message); return false;
     } finally {
       savingWorkflow.current = false;
       setProgressBusy(false);
@@ -2445,13 +2435,13 @@ function App() {
     }, 1500);
     return () => clearTimeout(timer);
   }, [workflowSnapshot, file, access.allowed, busy, aiBusy, progressBusy]);
-  async function resumeWorkflowProgress(historyId = "") {
+  async function resumeWorkflowProgress(historyId = "", savedId = "") {
     setProgressBusy(true);
     setProgressMessage("");
     setProgressError("");
     try {
       const result = await post(
-        historyId
+        savedId ? `/workflow-draft/saved/${encodeURIComponent(savedId)}/resume` : historyId
           ? `/workflow-draft/review/${encodeURIComponent(historyId)}/resume`
           : "/workflow-draft/resume",
         {},
@@ -2507,6 +2497,7 @@ function App() {
       };
       if (saved?.version !== 1)
         throw Error("This saved draft could not be opened.");
+      draftId.current = saved.draftId || crypto.randomUUID();
       restoringWorkflow.current = true;
       if (Object.hasOwn(saved, "email")) setEmail(saved.email);
       if (Object.hasOwn(saved, "level")) setLevel(saved.level);
@@ -2608,8 +2599,9 @@ function App() {
       setCreateDetails(saved.createDetails || blankResumeDetails());
       go(saved.page === "upload-preview" && !result.file ? "home" : saved.page);
       setProgressMessage("Your saved progress is ready.");
+      return true;
     } catch (error) {
-      setProgressError(error.message);
+      setProgressError(error.message); return false;
     } finally {
       setProgressBusy(false);
     }
@@ -2874,8 +2866,9 @@ function App() {
                 access.accessKind !== "beta-pass" &&
                 !betaEdition && (
                   <div className="coach-history-buttons">
-                    <CoachSavedReviews onResumeProgress={() => resumeWorkflowProgress()}
+                    <CoachSavedReviews onResumeProgress={id => resumeWorkflowProgress("", id)}
                       onOpen={(data) => {
+                  draftId.current = crypto.randomUUID();
                         setReview(data.review);
                         setResume(clone(data.review.resume));
                         setEmail(data.reviewUserEmail);
@@ -3053,7 +3046,7 @@ function App() {
               </form>
               <section className="ratings-intro">
               <div className="create-resume-entry">
-                <button className="coach-recent-toggle create-resume-button" type="button" onClick={() => { setError(""); setCreateDetails(current => demoMode && !current.first ? demoCreateDetails() : {...current, email: current.email || email}); go("create-resume"); }}><Folder size={18} aria-hidden="true" />Create a resume</button>
+                <button className="coach-recent-toggle create-resume-button" type="button" onClick={() => { draftId.current = crypto.randomUUID(); setError(""); setCreateDetails(current => demoMode && !current.first ? demoCreateDetails() : {...current, email: current.email || email}); go("create-resume"); }}><Folder size={18} aria-hidden="true" />Create a resume</button>
               </div>
 
                 <h2>Two scores. One clear next step.</h2>
@@ -3458,8 +3451,7 @@ function App() {
                             setBusy(true);
                             setError("");
                             try {
-                              await post("/coach/saved", {});
-                              go("home");
+                              if(await saveWorkflowProgress())go("home");
                             } catch (e) {
                               setError(e.message);
                             } finally {
@@ -3484,7 +3476,7 @@ function App() {
               />
               {aiResume?.rewriteNotice && <div className="rewrite-notice">
                 <Notice>{aiResume.rewriteNotice.replace("Some AI rewrites were incomplete. Your original ", "Some rewrites were incomplete. We kept your original ").replace(" wording was kept so no details were lost. You can use this draft or try the wording again.", " wording and details. Use this draft or try the wording again.")}</Notice>
-                {!aiBusy && <Button secondary onClick={() => generateAiVersion(resume)}>Try PNB Paws wording again</Button>}
+                {!aiBusy && <Button secondary onClick={() => generateAiVersion(resume, true)}>Try PNB Paws wording again</Button>}
               </div>}
                   {demoMode && (
                     <p className="rerate-result">
@@ -3574,7 +3566,7 @@ function App() {
                     </Notice>
                   )}
                   {!aiResume && !aiBusy && (
-                    <Button secondary onClick={() => generateAiVersion(resume)}>
+                    <Button secondary onClick={() => generateAiVersion(resume, true)}>
                       Try PNB Paws wording again
                     </Button>
                   )}
@@ -4444,7 +4436,7 @@ function App() {
                   className="card profile-help"
                   aria-label="Suggested links"
                 >
-                  <h2>Suggested links</h2>
+                  <h2>Suggested links</h2><p className="muted">{!review?.resume?.contact?.github && githubProfileFromProjects(review?.resume?.projects || "") ? "GitHub account found in your project links. Check that it belongs to you." : ""}</p>
                   {coding && (
                     <p className="highly-recommended">
                       Highly recommended for tech resumes
@@ -4896,7 +4888,6 @@ function App() {
                 }}
               >
               {technicalOptions && <NewProjectFields value={newProjects} onChange={setNewProjects} />}
-              <LinkedinExperienceImport url={normalizeWebLink(profileLinkedin)} onApply={setNewExperience} disabled={demo} />
               <NewExperienceFields value={newExperience} onChange={setNewExperience} hasExperience={experienceOptions.length > 0} />
                 {projectOptions
                   .map((project, index) => ({ project, index }))

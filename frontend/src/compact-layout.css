@@ -3934,7 +3934,7 @@ main:not(.page-home):not(.page-admin):not(.page-forgot):not(.page-reset)
   }
   .app-shell:has(> .journey) > main > .workflow-progress {
     position: absolute;
-    top: 0;
+    top: -36px;
     right: 0;
     width: 180px;
     margin: 0;
@@ -4305,3 +4305,23 @@ main:not(.page-home):not(.page-admin):not(.page-forgot):not(.page-reset)
 .builder-question-form > section > .field:last-child,
 .builder-question-form > .question .field { margin-bottom: 0; }
 .builder-question-form > .page-actions { margin-top: 4px; }
+
+.experience-entry { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
+.builder-question-form .experience-entry .experience-entry-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.builder-question-form .experience-entry .field { margin: 0; min-width: 0; }
+.builder-question-form .experience-entry p { margin: 4px 0 0; }
+.builder-question-form .experience-entry textarea { min-height: 96px; height: auto; }
+.builder-question-form .experience-current { display: flex; align-items: center; gap: 8px; margin: 0; }
+.builder-question-form .experience-current input { width: auto; margin: 0; }
+.builder-question-form .experience-entry > .experience-entry { margin: 0; box-shadow: none; }
+.builder-question-form .experience-entry > button { align-self: flex-start; margin: 0; }
+@media (max-width: 640px) {
+  .builder-question-form .experience-entry .experience-entry-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+.builder-question-form .experience-jobs { display: flex; flex-direction: column; gap: 12px; }
+.builder-question-form .experience-jobs > .field,
+.builder-question-form .experience-jobs > .experience-entry { margin: 0; }
+.builder-question-form .experience-entry h3 { margin: 0; }
+.builder-question-form .experience-job-fields { display: flex; flex-direction: column; gap: 12px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.builder-question-form .experience-job-fields:disabled { opacity: .65; }
