@@ -1455,7 +1455,7 @@ function App() {
       setRoleDetails({});
       go("format");
     } catch (e) {
-      go("home");
+      go(file ? "upload-preview" : "home");
       setTimeout(() => setError(e.message), 0);
     } finally {
       reviewInFlight.current = false;
@@ -2682,6 +2682,7 @@ function App() {
         features={featuresControl}
         progressControls={workflowProgressControls}
         file={file}
+        reviewError={error}
         sampleResume={demoMode ? demoResume : null}
         onBack={() => go("home")}
         onReview={() => analyze()}

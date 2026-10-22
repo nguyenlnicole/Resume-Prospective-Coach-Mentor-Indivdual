@@ -9,6 +9,7 @@ export default function UploadedResumePreview({
   progressControls,
   sampleResume,
   features,
+  reviewError,
 }) {
   const [preview, setPreview] = useState(null);
   const [error, setError] = useState("");
@@ -169,8 +170,9 @@ export default function UploadedResumePreview({
         </div>
       )}
       <footer className="uploaded-preview-actions">
+        {reviewError && <div role="alert"><strong>Your review could not finish.</strong><p>{reviewError}</p><p>Your resume is still attached. Try the review again.</p></div>}
         <div className="uploaded-review-actions">
-          <button type="button" className="primary button" disabled={!preview} onClick={onReview}>Rate My Resume</button>
+          <button type="button" className="primary button" disabled={!preview} onClick={onReview}>{reviewError ? "Try Review Again" : "Rate My Resume"}</button>
           <button type="button" className="secondary button" onClick={onBack}>Choose Another File</button>
         </div>
         <p>{textPreview ? "Check the extracted text before starting your ratings." : "Check every page before starting your ratings."}</p>
