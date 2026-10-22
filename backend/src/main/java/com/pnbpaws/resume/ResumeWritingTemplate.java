@@ -194,7 +194,7 @@ final class ResumeWritingTemplate {
   static final String APPROVED_SUMMARY = "Technical student majoring in mathematics with hands-on experience contributing to AI applications for fraud detection and newsletter automation. Project experience spans feature engineering, API workflows, software testing, and human-in-the-loop review, supported by work in instructional technology and clear technical communications.";
   static final String SUMMARY = "\nProfessional summary template: " + APPROVED_SUMMARY
       + "\nThis is a style example only, not facts about the current applicant. Create a new summary even when the source has none. "
-      + "Aim for 40 words in two polished sentences; remain within 35–45 words. Start with an accurate professional identity and relevant specialization, "
+      + "Aim for 30 words in one or two concise sentences; remain within 25–35 words. Start with an accurate professional identity and relevant specialization, "
       + "then explain concrete contributions and technical skills. For a technical student, use Technical student majoring in [actual major] when supported. "
       + "For an experienced professional, use their actual role and level instead. For nontechnical resumes, adapt the same structure to their profession. "
       + "Use each person's own evidence; never copy this example's major, tools or projects. Prioritize technical contributions for technical roles and omit unrelated marketing metrics. "

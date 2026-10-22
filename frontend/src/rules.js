@@ -728,10 +728,10 @@ export function validateResume(r, level) {
     errors.push(
       "Add a professional summary below your contact information, using your actual experience and strengths.",
     );
-  if (countWords(r.summary) < 35 || countWords(r.summary) > 45)
-    errors.push("Keep the professional summary between 35 and 45 words.");
-  if (countSentences(r.summary) < 2 || countSentences(r.summary) > 4)
-    errors.push("The summary needs 2–4 sentences.");
+  if (countWords(r.summary) < 25 || countWords(r.summary) > 45)
+    errors.push("Keep the professional summary between 25 and 45 words.");
+  if (countSentences(r.summary) < 1 || countSentences(r.summary) > 4)
+    errors.push("Keep the summary to 1–4 sentences.");
   for (const key of ["experience", "skills", "education"])
     if (!r[key]?.trim()) errors.push(`Complete the ${key} section.`);
   if (r.education?.trim()) errors.push(...educationErrors(r.education));

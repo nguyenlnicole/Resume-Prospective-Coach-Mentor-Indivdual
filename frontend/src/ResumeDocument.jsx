@@ -181,7 +181,7 @@ export default function ResumeDocument({
         </div>
       </header>
       <p className="resume-summary">{resumeDashes(r.summary)}</p>
-      {resumeSections(level)
+      {resumeSections(level, r)
         .slice(2)
         .filter(([k]) => r[k]?.trim())
         .map(([key, label]) => (

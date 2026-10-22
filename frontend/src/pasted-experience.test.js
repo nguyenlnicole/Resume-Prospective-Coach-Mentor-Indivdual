@@ -28,3 +28,9 @@ test('formats dates and removes copied city metadata without losing achievements
   const result = pastedExperience('AI Engineer\nMatching Donors · Part-time\nSep 2026 - Present · 2 mos\nRemote\nPresent\nBuild AI-integrated software for MatchingDonors.com outreach and marketing programs daily.');
   assert.equal(result.description, 'Build AI-integrated software for MatchingDonors.com outreach and marketing programs daily.');
  });
+
+ test('accepts compact role and employer headings with numeric dates', () => {
+  const result=pastedExperience('Lab Assistant at Hospital | 5/2024 - 5/2025\nSupported laboratory work by transporting samples and managing inventory for the team.');
+  assert.equal(result.role,'Lab Assistant'); assert.equal(result.employer,'Hospital');
+  assert.equal(result.start,'2024-05'); assert.equal(result.end,'2025-05');
+ });

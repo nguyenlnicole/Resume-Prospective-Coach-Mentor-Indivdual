@@ -7,7 +7,7 @@ final class SummaryRevision {
     String text = summary.strip();
     int words = text.isEmpty() ? 0 : text.split("\\s+").length;
     int sentences = text.isEmpty() ? 0 : text.split("[.!?]+(?:\\s+|$)").length;
-    return words >= 35 && words <= 45 && sentences >= 2 && sentences <= 4;
+    return words >= 25 && words <= 35 && sentences >= 1 && sentences <= 2;
   }
 
   static String finish(String draft, String original, Function<String, String> rewrite) {

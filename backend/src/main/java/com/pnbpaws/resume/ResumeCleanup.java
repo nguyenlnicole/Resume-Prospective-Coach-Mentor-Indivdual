@@ -84,6 +84,16 @@ class ResumeCleanup {
       }
       projects.add(heading+(body.isEmpty()?"":"\n"+String.join("\n",body)));
     }
+    List<String> volunteerRoles = new ArrayList<>();
+    projects.removeIf(block -> {
+      String title = block.lines().findFirst().orElse("").replaceAll("^[•*\\-]\\s*", "");
+      boolean role = title.matches("(?i).*\\s[—–-]\\s.*\\bvolunteer\\b.*")
+          && !title.matches("(?i).*\\bproject\\b.*");
+      if (role) volunteerRoles.add(block.replaceFirst("^[•*\\-]\\s*", ""));
+      return role;
+    });
+    if (!volunteerRoles.isEmpty()) result.put("experience", result.path("experience").asText()
+        + "\n\n" + String.join("\n\n", volunteerRoles));
     result.put("projects",String.join("\n\n",projects));
     result.put("experience", ExperienceOrder.sort(result.path("experience").asText()));
     result.put("education", compactEducation(result.path("education").asText()));

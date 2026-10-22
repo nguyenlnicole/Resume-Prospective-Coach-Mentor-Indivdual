@@ -519,15 +519,15 @@ test("unsafe contact links cannot be exported", () => {
   assert.equal(safeLink(r.contact.linkedin), null);
   assert.ok(validateResume(r, "Senior").some((x) => x.includes("linkedin")));
 });
-test("the professional summary needs 35 to 45 words", () => {
+test("the professional summary needs 25 to 45 words", () => {
   let r = structuredClone(sampleResume);
   r.summary = "I build applications. I test software.";
   assert.ok(
-    validateResume(r, "Senior").some((x) => x.includes("35 and 45 words")),
+    validateResume(r, "Senior").some((x) => x.includes("25 and 45 words")),
   );
   r.summary = "I " + "build ".repeat(54) + ". I test software.";
   assert.ok(
-    validateResume(r, "Senior").some((x) => x.includes("35 and 45 words")),
+    validateResume(r, "Senior").some((x) => x.includes("25 and 45 words")),
   );
 });
 
@@ -626,15 +626,15 @@ test("formatted project labels do not duplicate and all original destinations su
   }
 });
 
-test("summary boundaries are 35–45 across professions", () => {
+test("summary boundaries are 25–45 across professions", () => {
   for (const level of ["Senior", "General", "Educator", "Medical Field"]) {
-    for (const words of [34, 35, 45, 46]) {
+    for (const words of [24, 25, 35, 45, 46]) {
       const r = structuredClone(sampleResume);
       r.summary = "Experience ".repeat(words - 2) + "matters. Contributions.";
       assert.equal(countWords(r.summary), words);
       assert.equal(
-        validateResume(r, level).some((error) => error.includes("35 and 45")),
-        words < 35 || words > 45,
+        validateResume(r, level).some((error) => error.includes("25 and 45")),
+        words < 25 || words > 45,
       );
     }
   }
@@ -745,3 +745,9 @@ test('standalone markdown repo links move into the heading without duplicate bod
  assert.ok(!result.includes('GitHub Repo'));
  assert.ok(result.includes('Built a sensor-controlled traffic system.'));
 });
+
+ test("a concise one-sentence assisted summary is accepted", () => {
+  const r=structuredClone(sampleResume);
+  r.summary="Biochemistry student with experience supporting hospital laboratory operations, managing research materials, and communicating findings from biomedical projects to research teams through presentations and clear written reports.";
+  assert.ok(!validateResume(r,"Medical Field").some(error=>/summary/i.test(error)));
+ });

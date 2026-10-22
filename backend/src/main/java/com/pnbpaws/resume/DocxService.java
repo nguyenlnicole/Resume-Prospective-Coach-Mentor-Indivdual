@@ -52,6 +52,7 @@ class DocxService {
         {"projects", ResumeProfiles.projectsHeading(level)}, {"education", "EDUCATION"},
         {"certifications", ResumeProfiles.certificationsHeading(level)}};
     for (String[] section : sections) {
+      section[1] = ResumeProfiles.sectionHeading(section[0], section[1], level, resume);
       String value = resume.path(section[0]).asText();
       if (value.isBlank()) continue;
       b.line(b.run(section[1].toUpperCase(), true, false, Math.round(typography.heading() * 2)).replace("</w:rPr>", "<w:u w:val=\"single\"/></w:rPr>"), "left", 120, 40);

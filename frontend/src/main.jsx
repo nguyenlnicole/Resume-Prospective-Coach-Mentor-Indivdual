@@ -5123,7 +5123,7 @@ function App() {
                 ))}
                 <details>
                   <summary>View the full proposed draft</summary>
-                  {resumeSections(reviewLevel).map(([key, label]) => (
+                  {resumeSections(reviewLevel, resume).map(([key, label]) => (
                     <div key={key}>
                       <h3>{label}</h3>
                       <p style={{ whiteSpace: "pre-wrap" }}>
@@ -5195,7 +5195,7 @@ function App() {
               </details>}
               <div className="editor-layout">
                 <section className="section-list">
-                  {resumeSections(reviewLevel)
+                  {resumeSections(reviewLevel, resume)
                     .filter(
                       ([k]) =>
                         !(
@@ -5234,7 +5234,7 @@ function App() {
                                 : "muted"
                             }
                           >
-                            {countWords(resume.summary)} words · aim for 35–45
+                            {countWords(resume.summary)} words · aim for 25–35
                           </small>
                         )}
                         {key === "projects" &&
@@ -6072,7 +6072,7 @@ function EditModal({
     );
   return (
     <Modal
-      title={"Edit " + resumeSections(level).find(([k]) => k === section)[1]}
+      title={"Edit " + resumeSections(level, draft).find(([k]) => k === section)[1]}
       onClose={onClose}
     >
       <form
@@ -6288,7 +6288,7 @@ function EditModal({
               }
             />
             {section === "summary" && (
-              <small>{countWords(draft.summary)} words · aim for 35–45</small>
+              <small>{countWords(draft.summary)} words · aim for 25–35</small>
             )}
             {section === "projects" && technicalOptions && (
               <div className="project-link-guidance">

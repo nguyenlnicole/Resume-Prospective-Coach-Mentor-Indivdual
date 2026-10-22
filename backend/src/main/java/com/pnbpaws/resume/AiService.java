@@ -289,8 +289,8 @@ Write project descriptions in a natural, straightforward voice, as someone expla
                 + " adopting the draft. Do not refuse to draft solely because approval is needed."
                 + " Missing facts stay blank and must be resolved in the editor. Make approval questions short and distinct: ask one fact per question in plain language and keep hints brief. Never repeat the entire resume entry or ask duplicate questions."
                 + (ResumeProfiles.general(level)
-                    ? " Write a 35–45-word professional summary in 2–4 sentences. As a writing preference, aim for 3–4 truthful bullets for the newest job, three for middle jobs, and 2–3 for the oldest job (fewer bullets are allowed; never require extra facts to fill a quota), including grouped roles. Do not pad with invented claims."
-                    : " Write a 35–45-word professional summary in 2–4 sentences using only supported experience. Ask for more detail rather than padding it. As a writing preference, aim for 3–4 bullets for the newest role, three for middle roles, and 2–3 for the oldest role (fewer bullets are allowed; never require extra facts to fill a quota), even for roles grouped under one employer. Each bullet must use 15–30 words of supported facts; ask for real details rather than inventing a bullet.")
+                    ? " Write a 25–35-word professional summary in 1–2 sentences. As a writing preference, aim for 3–4 truthful bullets for the newest job, three for middle jobs, and 2–3 for the oldest job (fewer bullets are allowed; never require extra facts to fill a quota), including grouped roles. Do not pad with invented claims."
+                    : " Write a 25–35-word professional summary in 1–2 sentences using only supported experience. Ask for more detail rather than padding it. As a writing preference, aim for 3–4 bullets for the newest role, three for middle roles, and 2–3 for the oldest role (fewer bullets are allowed; never require extra facts to fill a quota), even for roles grouped under one employer. Each bullet must use 15–30 words of supported facts; ask for real details rather than inventing a bullet.")
                 + " The zero-based combineExperience indexes identify roles whose"
                 + " complete supplied bullets the user asked you to try combining into the"
                 + " required number. Merge related facts from the same role only; retain supported"
@@ -425,7 +425,7 @@ Write project descriptions in a natural, straightforward voice, as someone expla
       input.set("source", source); input.put("level", level); input.put("draftToRevise", current);
       input.put("draftWordCount", current.isBlank() ? 0 : current.strip().split("\\s+").length);
       return call(ResumeWritingTemplate.SUMMARY + "Rewrite the professional summary itself; do not return advice or a word-count warning. "
-          + "Return a distinct, natural summary of 35–45 whitespace-separated words in 2–4 complete sentences. Aim for 38–42 words. "
+          + "Return a distinct, natural summary of 25–35 whitespace-separated words in 1–2 complete sentences. Aim for 28–32 words. "
           + "Use the approved resume style: a clear professional introduction, relevant contributions, and a concrete outcome only when supported. "
           + "Select the most relevant facts rather than cramming every activity, technology or metric into a list. Use direct verbs, parallel phrasing and consistent tense. "
           + "Use only facts supported by the source resume and supplied answers. Preserve actual student or career status. Never imply a completed degree, professional title or employment history that is not supplied. "
@@ -454,8 +454,8 @@ Write project descriptions in a natural, straightforward voice, as someone expla
             + "name the relevant contribution, and state an outcome only when the "
             + "source already supports it. Match the selected resume profile and target role. "
             + (ResumeProfiles.general(level)
-                ? "Keep the summary at 35–45 words in 2–4 sentences, using only supported facts. "
-                : "Rewrite the summary in two to four sentences and 35–45 words, using only supported facts. ")
+                ? "Keep the summary at 25–35 words in 1–2 sentences, using only supported facts. "
+                : "Rewrite the summary in one or two sentences and 25–35 words, using only supported facts. ")
             + "Rewrite each supplied "
             + "experience and project bullet one-to-one in its original order. Return exactly "
             + "the same number of bullets in each array. Keep each experience bullet the same length or "

@@ -503,6 +503,7 @@ class PdfService {
           {"certifications", ResumeProfiles.certificationsHeading(level)}
         };
         for (String[] s : sections) {
+          s[1] = ResumeProfiles.sectionHeading(s[0], s[1], level, resume);
           String text = resume.path(s[0]).asText();
           if (s[0].equals("experience")) text = formattedExperience(text);
           if (s[0].equals("projects")) text = formattedProjects(text);
@@ -743,28 +744,35 @@ class PdfService {
         }
         return;
       }
-      if (section.equals("experience") && dated && dates.equals("inline")) {
-        String title = line.substring(0, split), date = line.substring(split + 3);
+      if (section.equals("experience") && !bullet && (dated || line.contains(" — "))) {
+        String title = dated ? line.substring(0, split) : line;
+        String date = dated ? line.substring(split + 3) : "";
+        int separator = title.indexOf(" — ");
         advance(leading);
         float x = left;
-        int separator = title.indexOf(" — ");
-        if (separator >= 0) {
-          String employer = title.substring(0, separator);
-          text(employer, x, y, bold, size);
-          x += width(employer, bold, size);
-          text(" — ", x, y, regular, size);
-          x += width(" — ", regular, size);
-          title = title.substring(separator + 3);
+        String[] fragments = separator < 0 ? new String[]{title}
+            : new String[]{title.substring(0, separator), title.substring(separator)};
+        for (int part = 0; part < fragments.length; part++) {
+          PDFont face = separator >= 0 && part == 0 ? bold : italic;
+          for (String word : fragments[part].strip().split("\\s+")) {
+            float wordWidth = width(word, face, size);
+            if (wordWidth > width) throw new ResponseStatusException(UNPROCESSABLE_ENTITY, "An experience heading contains a word too long to fit.");
+            if (x + wordWidth > left + width) { advance(leading); x = left; }
+            text(word, x, y, face, size);
+            x += wordWidth + width(" ", face, size);
+          }
         }
-        text(title, x, y, italic, size);
-        x += width(title, italic, size);
-        String suffix = " | " + date;
-        if (x + width(suffix, regular, size) > left + width) {
-          advance(leading);
-          x = left;
-          suffix = date;
+        if (!date.isBlank()) {
+          float dateWidth = width(date, regular, size);
+          if (dates.equals("right")) {
+            if (x + dateWidth + 14 > left + width) advance(leading);
+            text(date, left + width - dateWidth, y, regular, size);
+          } else {
+            String suffix = " | " + date;
+            if (x + width(suffix, regular, size) > left + width) { advance(leading); x = left; suffix = date; }
+            text(suffix, x, y, regular, size);
+          }
         }
-        text(suffix, x, y, regular, size);
         return;
       }
       if (dates.equals("right") && dated) {

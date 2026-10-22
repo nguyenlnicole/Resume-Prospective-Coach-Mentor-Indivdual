@@ -69,42 +69,16 @@ export const sections = [
   ["education", "Education"],
   ["certifications", "Certifications"],
 ];
-export function resumeSections(level) {
-  return sections
-    .filter(
-      ([key]) =>
-        ![
-          "clinicalRotations",
-          "clinicalTraining",
-          "proceduresSpecialty",
-          "residencyFellowship",
-          "licensure",
-          "boardCertification",
-          "research",
-          "publications",
-          "teaching",
-          "presentations",
-        ].includes(key) || level === "Medical Field",
-    )
-    .map(([key, label]) => [
-      key,
-      key === "skills" && ["General", "Normal"].includes(level)
-        ? "Professional Skills"
-        : key === "skills" && level === "Educator"
-          ? "Teaching & Professional Skills"
-          : key === "skills" && level === "Medical Field"
-            ? "Clinical & Professional Skills"
-            : key === "projects" &&
-                ["General", "Normal", "Medical Field", "Educator"].includes(
-                  level,
-                )
-              ? "Projects & Volunteer Experience"
-              : key === "certifications" && level === "Educator"
-                ? "Teaching Credentials & Certifications"
-                : key === "certifications" && level === "Medical Field"
-                  ? "Licensure and Certifications"
-                  : label,
-    ]);
+export function resumeSections(level, resume = {}) {
+  const text = ['summary','experience','skills','projects','education'].map(key => resume[key] || '').join(' ');
+  const bio = level === 'Medical Field' && (/\b(bioinformatics|computational biology|biomedical informatics)\b/i.test(text) || (/\b(biochemistry|biomedical|genomics|molecular biology)\b/i.test(text) && /\b(python|machine learning|computational)\b/i.test(text)));
+  const researchLabels = {experience:'Research & Professional Experience', skills:'Technical Skills', projects:'Research & Technical Projects', certifications:'Certifications'};
+  return sections.filter(([key]) => !["clinicalRotations", "clinicalTraining", "proceduresSpecialty", "residencyFellowship", "licensure", "boardCertification", "research", "publications", "teaching", "presentations"].includes(key) || level === "Medical Field").map(([key, label]) => [key, bio && researchLabels[key] ? researchLabels[key] : key === "skills" && ["General", "Normal"].includes(level) ? "Professional Skills"
+    : key === "skills" && level === "Educator" ? "Teaching & Professional Skills"
+    : key === "skills" && level === "Medical Field" ? "Clinical & Professional Skills"
+    : key === "projects" && ["General", "Normal", "Medical Field", "Educator"].includes(level) ? "Projects"
+    : key === "certifications" && level === "Educator" ? "Teaching Credentials & Certifications"
+    : key === "certifications" && level === "Medical Field" ? "Licensure and Certifications" : label]);
 }
 export const sampleResume = {
   softwareEngineering: true,

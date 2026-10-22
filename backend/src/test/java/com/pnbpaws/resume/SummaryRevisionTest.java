@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.web.server.ResponseStatusException;
 
 class SummaryRevisionTest {
-  private static final String FINISHED = "Mathematics student with experience creating student-facing technology communications and supporting training in instructional tools. Creates clear written content, explains technical workflows, and draws on university projects to help students understand and use available learning resources effectively.";
+  private static final String FINISHED = "Mathematics student with experience creating technology communications and supporting training in instructional tools. Explains technical workflows clearly and helps students understand and use available university learning resources.";
   @Test void repairsAnOverLengthGeneratedSummaryAutomatically() {
     var calls = new AtomicInteger();
     assertTrue(SummaryRevision.valid(FINISHED));
