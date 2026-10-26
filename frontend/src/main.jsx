@@ -1198,7 +1198,10 @@ function App() {
     roleContext,
   ]);
   const coding = isTechnical(reviewLevel) && codingChoice === true;
-  const guideline = levelGuidelines[reviewLevel];
+  const guidelineLevel = page === "create-resume"
+    ? (createDetails.profession === "Technical" ? createDetails.level : createDetails.profession)
+    : reviewLevel;
+  const guideline = levelGuidelines[guidelineLevel];
   const experienceOptions = experienceList(review?.resume?.experience);
   const projectOptions = projectList(review?.resume?.projects);
   const repoTechnologyRequests = useRef(new Map());
@@ -2829,7 +2832,7 @@ function App() {
               </button>
             </div>
           )}
-          {["preferences", "questions", "edit", "complete"].includes(page) && (
+          {guideline && ["create-resume", "preferences", "questions", "edit", "complete"].includes(page) && (
             <aside className="level-guide" aria-label="Selected career level">
               <div className="icon-orb">
                 <ShieldCheck size={23} />

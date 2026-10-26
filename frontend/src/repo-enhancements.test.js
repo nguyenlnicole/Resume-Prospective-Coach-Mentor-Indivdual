@@ -42,7 +42,7 @@ test("suggestions require stronger documented relevance and exclude forks and al
     size: 12,
     html_url: "https://github.com/person/portal",
   };
-  const projects = ["Calculator — Java\nBuilt a calculator."];
+  const projects = ["Calculator — Java\nBuilt a calculator.", "Service — Java", "Tool — Java"];
   const result = suggestProjects(
     projects,
     [

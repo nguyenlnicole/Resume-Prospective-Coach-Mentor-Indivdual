@@ -10,7 +10,6 @@ export function cleanExperienceDescription(text = '') {
 }
 export function pastedExperience(text = '') {
   const lines = text.slice(0, 12000).replace(/\s*\|\s*/g, '\n').replace(/\s*;\s*(?=(?:role|title|job title|company|employer|organization|dates?|description)\s*:)/gi, '\n').split(/\r?\n/).map(line => line.trim().replace(/\\$/g, '').replace(/^\\(?=[-•])/, '').replace(/\*\*/g, '').trim()).filter(Boolean);
-  // Accept a compact 'Role at Company' heading as well as a LinkedIn paste.
   if (lines.length > 1 && /\s+at\s+/i.test(lines[0])) {
     const heading = lines[0].split(/\s+at\s+/i);
     if (heading.length === 2) lines.splice(0, 1, ...heading);
