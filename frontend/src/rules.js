@@ -591,8 +591,8 @@ export function experienceBullets(entry = "") {
   }
   return bullets;
 }
-export function experienceBulletLimit(entries, index) {
-  return index === 0 ? 4 : 3;
+export function experienceBulletLimit(entries, index, level = "Junior") {
+  return ["Senior", "Management"].includes(level) ? 4 : 3;
 }
 export function selectExperienceBullets(entry, selected) {
   let bullet = -1;
@@ -728,8 +728,8 @@ export function validateResume(r, level) {
     errors.push(
       "Add a professional summary below your contact information, using your actual experience and strengths.",
     );
-  if (countWords(r.summary) < 25 || countWords(r.summary) > 45)
-    errors.push("Keep the professional summary between 25 and 45 words.");
+  if (countWords(r.summary) < 25 || countWords(r.summary) > 48)
+    errors.push("Keep the professional summary between 25 and 48 words.");
   if (countSentences(r.summary) < 1 || countSentences(r.summary) > 4)
     errors.push("Keep the summary to 1–4 sentences.");
   for (const key of ["experience", "skills", "education"])
@@ -750,7 +750,7 @@ export function validateResume(r, level) {
   const jobs = experienceList(r.experience || "");
   for (const [index, entry] of jobs.entries()) {
     const bullets = experienceBullets(entry);
-    const limit = experienceBulletLimit(jobs, index);
+    const limit = experienceBulletLimit(jobs, index, level);
     if (bullets.length > limit)
       errors.push(
         `Use at most ${limit} bullets for ${index === 0 ? "the newest" : index === jobs.length - 1 ? "the oldest" : "each other"} job, using only real experience.`,

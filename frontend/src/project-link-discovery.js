@@ -49,6 +49,8 @@ export function matchProjectLinks(projects, repos, demoUrl = "") {
       matches = available.filter(
         (repo) => identity(repo.name) === identity(name),
       );
+    const shortName = name.split(":")[0].trim();
+    if (!matches.length && shortName !== name && identity(shortName).length >= 4) matches = available.filter(repo => identity(repo.name) === identity(shortName));
     if (matches.length !== 1) return;
     const repo = matches[0];
     const links = [repo.html_url, repo.homepage].filter((url) =>

@@ -10,7 +10,7 @@ class SummaryRevisionTest {
   @Test void repairsAnOverLengthGeneratedSummaryAutomatically() {
     var calls = new AtomicInteger();
     assertTrue(SummaryRevision.valid(FINISHED));
-    assertEquals(FINISHED, SummaryRevision.finish("word ".repeat(46), "Original.", draft -> { calls.incrementAndGet(); return FINISHED; }));
+    assertEquals(FINISHED, SummaryRevision.finish("word ".repeat(49), "Original.", draft -> { calls.incrementAndGet(); return FINISHED; }));
     assertEquals(1, calls.get());
   }
   @Test void keepsAnAlreadyValidSummaryWithoutAnotherAiCall() {
@@ -22,6 +22,6 @@ class SummaryRevisionTest {
   @Test void returnsUsableRepairWhenLengthTargetIsNotMet() {
     var calls = new AtomicInteger();
     assertEquals("Still too short.", SummaryRevision.finish("Too short.", "Original.", draft -> { calls.incrementAndGet(); return "Still too short."; }));
-    assertEquals(1, calls.get());
+    assertEquals(3, calls.get());
   }
 }

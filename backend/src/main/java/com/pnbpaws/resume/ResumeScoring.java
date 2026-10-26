@@ -34,7 +34,7 @@ class ResumeScoring {
         new Criterion(
             "summary",
             "Summary length",
-            "Present, 2–4 sentences and 35–45 words. Do not assess the"
+            "Present, 1–2 sentences and 25–48 words. Do not assess the"
                 + " quality of its claims in this review."),
         new Criterion(
             "sections",
@@ -370,7 +370,7 @@ class ResumeScoring {
         && normalized(input.text()).contains(normalized(summary))) {
       int words = summary.split("\\s+").length;
       long sentences = ResumeText.sentences(summary);
-      boolean meets = words >= 35 && words <= 45 && sentences >= 2 && sentences <= 4;
+      boolean meets = words >= 25 && words <= 48 && sentences >= 1 && sentences <= 2;
       override(
           format,
           "summary",
@@ -378,7 +378,7 @@ class ResumeScoring {
           words + " words and " + sentences + " sentences in the extracted summary.",
           meets
               ? "Keep the summary within these limits."
-              : "Use 2–4 sentences and 35–45 words.");
+              : "Use 1–2 sentences and 25–48 words.");
     }
     if (level.equals("Management")) {
       var cert = (ObjectNode) content.get(0);

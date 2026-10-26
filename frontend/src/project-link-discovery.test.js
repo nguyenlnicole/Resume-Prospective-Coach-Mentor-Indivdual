@@ -159,3 +159,9 @@ test('hyphenated titles retain their full name for repository matching', () => {
  assert.deepEqual(matchProjectLinks(['Hydrogen-Fuel-Cell Rover'],[{name:'hydrogen-fuel-cell-rover',html_url:url}]),{0:[url]});
  assert.deepEqual(matchProjectLinks(['Traffic Light Controller'],[{name:'applied-ai-system-project',html_url:'https://github.com/example/applied-ai-system-project'}]),{});
 });
+
+ test("matches a unique project title before its subtitle", () => {
+  const repo = {name:"the-shaadi-shop", html_url:"https://github.com/example/the-shaadi-shop", fork:false};
+  assert.deepEqual(matchProjectLinks(["The Shaadi Shop: Non-profit ecommerce website"], [repo])[0], [repo.html_url]);
+  assert.deepEqual(matchProjectLinks(["The Shaadi Shop: Non-profit ecommerce website"], [repo, {...repo, name:"the_shaadi_shop"}]), {});
+ });

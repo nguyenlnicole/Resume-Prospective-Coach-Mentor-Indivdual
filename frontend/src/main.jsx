@@ -1279,7 +1279,7 @@ function App() {
   const keptProjects = selectedProjects ?? projectOptions.map((_, index) => index);
   const selectedJobs = keptExperience.map((index) => experienceOptions[index]);
   const bulletLimitFor = (index) =>
-    experienceBulletLimit(selectedJobs, keptExperience.indexOf(index));
+    experienceBulletLimit(selectedJobs, keptExperience.indexOf(index), reviewLevel);
   useEffect(() => {
     if (page !== "edit" || editSection || aiSource === aiInputKey) return;
     const timer = setTimeout(() => generateAiVersion(resume), 2500);
@@ -4639,7 +4639,7 @@ function App() {
                       <h2>Choose bullets for {entry.split("\n")[0]}</h2>
                       <p>
                         Pick {limit}, or try combining your facts into {limit}{" "}
-                        bullets. Each final bullet needs 15–30 words.
+                        bullets. We’ll aim for 20–30 words per bullet using your facts.
                       </p>
                       <label className="choice">
                         <input
@@ -4883,7 +4883,7 @@ function App() {
                 }}
               >
               {technicalOptions && <NewProjectFields value={newProjects} onChange={setNewProjects} />}
-              <NewExperienceFields demo={demo} value={newExperience} onChange={setNewExperience} hasExperience={experienceOptions.length > 0} />
+              <NewExperienceFields level={reviewLevel} demo={demo} value={newExperience} onChange={setNewExperience} hasExperience={experienceOptions.length > 0} />
                 {projectOptions
                   .map((project, index) => ({ project, index }))
                   .filter(
@@ -5231,13 +5231,13 @@ function App() {
                         {key === "summary" && isTechnical(reviewLevel) && (
                           <small
                             className={
-                              countWords(resume.summary) < 35 ||
-                              countWords(resume.summary) > 45
+                              countWords(resume.summary) < 25 ||
+                              countWords(resume.summary) > 48
                                 ? "invalid"
                                 : "muted"
                             }
                           >
-                            {countWords(resume.summary)} words · aim for 25–35
+                            {countWords(resume.summary)} words · aim for 25–48
                           </small>
                         )}
                         {key === "projects" &&
@@ -6291,7 +6291,7 @@ function EditModal({
               }
             />
             {section === "summary" && (
-              <small>{countWords(draft.summary)} words · aim for 25–35</small>
+              <small>{countWords(draft.summary)} words · aim for 25–48</small>
             )}
             {section === "projects" && technicalOptions && (
               <div className="project-link-guidance">

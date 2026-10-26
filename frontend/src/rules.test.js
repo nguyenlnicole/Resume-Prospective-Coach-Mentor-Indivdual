@@ -168,7 +168,7 @@ test("multiple roles at one employer retain the employer name and distinct dates
   assert.ok(roles.every((role) => role.startsWith("Acme Labs")));
   assert.equal(experienceYearsCovered(roles), 8);
 });
-test("grouped roles follow recency bullet ranges", () => {
+test("role bullet targets follow career level", () => {
   const r = structuredClone(sampleResume);
   const bullet =
     "• Delivered supported API work with tests and release checks.";
@@ -176,12 +176,12 @@ test("grouped roles follow recency bullet ranges", () => {
   const jobs = experienceList(r.experience);
   assert.deepEqual(
     jobs.map((_, i) => experienceBulletLimit(jobs, i)),
-    [4, 3],
+    [3, 3],
   );
   assert.deepEqual(validateResume(r, "Senior"), []);
   r.experience += `\n${bullet}\n${bullet}`;
   assert.ok(
-    validateResume(r, "Senior").some((message) => message.includes("oldest")),
+    !validateResume(r, "Senior").some((message) => message.includes("oldest")),
   );
 });
 
@@ -519,15 +519,15 @@ test("unsafe contact links cannot be exported", () => {
   assert.equal(safeLink(r.contact.linkedin), null);
   assert.ok(validateResume(r, "Senior").some((x) => x.includes("linkedin")));
 });
-test("the professional summary needs 25 to 45 words", () => {
+test("the professional summary needs 25 to 48 words", () => {
   let r = structuredClone(sampleResume);
   r.summary = "I build applications. I test software.";
   assert.ok(
-    validateResume(r, "Senior").some((x) => x.includes("25 and 45 words")),
+    validateResume(r, "Senior").some((x) => x.includes("25 and 48 words")),
   );
   r.summary = "I " + "build ".repeat(54) + ". I test software.";
   assert.ok(
-    validateResume(r, "Senior").some((x) => x.includes("25 and 45 words")),
+    validateResume(r, "Senior").some((x) => x.includes("25 and 48 words")),
   );
 });
 
@@ -626,15 +626,15 @@ test("formatted project labels do not duplicate and all original destinations su
   }
 });
 
-test("summary boundaries are 25–45 across professions", () => {
+test("summary boundaries are 25–48 across professions", () => {
   for (const level of ["Senior", "General", "Educator", "Medical Field"]) {
-    for (const words of [24, 25, 35, 45, 46]) {
+    for (const words of [24, 25, 35, 48, 49]) {
       const r = structuredClone(sampleResume);
       r.summary = "Experience ".repeat(words - 2) + "matters. Contributions.";
       assert.equal(countWords(r.summary), words);
       assert.equal(
-        validateResume(r, level).some((error) => error.includes("25 and 45")),
-        words < 25 || words > 45,
+        validateResume(r, level).some((error) => error.includes("25 and 48")),
+        words < 25 || words > 48,
       );
     }
   }

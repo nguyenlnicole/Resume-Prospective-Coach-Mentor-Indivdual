@@ -3,7 +3,7 @@ import { post } from './api.js';
 import { pastedExperience, formatExperienceMonth } from './pasted-experience.js';
 import { experienceWordCount, newExperienceError } from './new-experience.js';
 
-function JobBox({ value, onChange, number, optional, hasExperience, demo }) {
+function JobBox({ value, onChange, number, optional, hasExperience, demo, level }) {
   const prefix = number === 1 ? 'new' : 'second';
   const [showPreview, setShowPreview] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -12,11 +12,11 @@ function JobBox({ value, onChange, number, optional, hasExperience, demo }) {
   useEffect(() => () => { generation.current++; }, []);
   async function previewRole() {
     setShowPreview(true);
-    if (error || generating || value.previewBullets?.length === 3) return;
+    if (error || generating || value.previewBullets?.length === (["Senior", "Management"].includes(level) ? 4 : 3)) return;
     const requestId = ++generation.current;
     setGenerating(true); setGenerationError('');
     try {
-      const result = await post('/resume/experience-bullets', { ...value, enabled: true, secondRole: undefined });
+      const result = await post('/resume/experience-bullets', { ...value, level, enabled: true, secondRole: undefined });
       if (requestId === generation.current) onChange({ ...value, previewBullets: result.bullets });
     } catch (failure) { if (requestId === generation.current) setGenerationError(failure.message); }
     finally { if (requestId === generation.current) setGenerating(false); }
@@ -26,7 +26,7 @@ function JobBox({ value, onChange, number, optional, hasExperience, demo }) {
     ? [value.role, value.employer, `${formatExperienceMonth(value.start)} - ${value.current ? 'Present' : formatExperienceMonth(value.end)}`, value.description].filter(Boolean).join('\n')
     : value.description || '';
   const text = value.pastedText ?? restoredText;
-  const error = newExperienceError({ ...value, enabled: true, secondRole: undefined });
+  const error = newExperienceError({ ...value, level, enabled: true, secondRole: undefined });
   return <section className="card shortlist-card experience-entry">
     <h3>Fill experience from LinkedIn</h3>
     <p><strong>Experience {number}{optional ? ' · Optional' : ''}</strong></p>
@@ -44,12 +44,12 @@ function JobBox({ value, onChange, number, optional, hasExperience, demo }) {
         }} placeholder={'Copy and paste the entire LinkedIn Experience entry for one job, or provide your own details: role, company, dates (or Present), and at least two sentences about your work.'} />
         <small>{experienceWordCount(value.description)} / 10 words minimum. Paste text, not a profile link.</small>
       </div>
-      <button type="button" className="button secondary" style={{alignSelf:'flex-start'}} disabled={generating || demo} onClick={previewRole}>{generating ? 'Writing three bullets…' : 'Find this role'}</button>
+      <button type="button" className="button secondary" style={{alignSelf:'flex-start'}} disabled={generating || demo} onClick={previewRole}>{generating ? 'Writing resume bullets…' : 'Find this role'}</button>
       {showPreview && (error ? <p role="alert">{error}</p> : <div className="experience-preview">
         <p role="status">Check these details. Edit the text above to make changes.</p>
         <h4>{value.role} · {value.employer}</h4>
         <p>{formatExperienceMonth(value.start)} – {value.current ? 'Present' : formatExperienceMonth(value.end)}</p>
-        {generating ? <p role="status">Turning your details into three resume bullets…</p> : value.previewBullets?.length ? <ul>{value.previewBullets.map((bullet, index) => <li key={index}>{bullet}</li>)}</ul> : null}
+        {generating ? <p role="status">Turning your details into resume bullets…</p> : value.previewBullets?.length ? <ul>{value.previewBullets.map((bullet, index) => <li key={index}>{bullet}</li>)}</ul> : null}
         {generationError && <p role="alert">{generationError} Your original details are kept. Select “Find this role” to retry.</p>}
       </div>)}
       {hasExperience && <label className="experience-current"><input type="checkbox" checked={value.replaceOldest === true} onChange={e => update('replaceOldest', e.target.checked)} /> Replace my oldest completed experience with this role (optional).</label>}
@@ -57,14 +57,14 @@ function JobBox({ value, onChange, number, optional, hasExperience, demo }) {
   </section>;
 }
 
-export default function NewExperienceFields({ value, onChange, hasExperience, demo = false }) {
+export default function NewExperienceFields({ value, onChange, hasExperience, demo = false, level = "Junior" }) {
   return <section className="experience-jobs">
     <div className="field"><label htmlFor="add-experience">Add additional experience?</label>
       <select id="add-experience" value={value.enabled ? 'yes' : 'no'} onChange={e => onChange({ ...value, enabled: e.target.value === 'yes' })}><option value="no">No</option><option value="yes">Yes</option></select>
     </div>
     {value.enabled && <>
-      <JobBox number={1} value={value} onChange={onChange} hasExperience={hasExperience} demo={demo} />
-      <JobBox number={2} optional value={value.secondRole || { enabled: false }} onChange={secondRole => onChange({ ...value, secondRole })} hasExperience={hasExperience} demo={demo} />
+      <JobBox number={1} value={value} onChange={onChange} hasExperience={hasExperience} demo={demo} level={level} />
+      <JobBox number={2} optional value={value.secondRole || { enabled: false }} onChange={secondRole => onChange({ ...value, secondRole })} hasExperience={hasExperience} demo={demo} level={level} />
     </>}
   </section>;
 }
