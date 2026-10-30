@@ -10,7 +10,7 @@ import NewExperienceFields from './NewExperienceFields.jsx';
 import { newExperienceError, removeOldestExperience, shouldReplaceOldestExperience } from './new-experience.js';
 import { visibleReviewFindings } from "./review-findings.js";
 import { demoJobUrl, demoJobTitle, demoJobDescription } from "./demo-job";
-import { addRepositorySkills, newlyListedSkills } from "./repo-skills";
+import { addRepositorySkills, newlyListedSkills, collectRepositorySkills, retainSkills } from "./repo-skills";
 import ProjectSuggestions from "./ProjectSuggestions";
 import {
   demoResume,
@@ -1715,15 +1715,10 @@ function App() {
         })
         .join("\n\n");
       if (technicalOptions) chosenResume.projects = addNewProjects(chosenResume.projects, newProjects);
-      const discoveredSkills = demo ? [] : projectIndexes.flatMap(index => {
-        const links = projectLinks[index] ?? projectLinkUrls(projectOptions[index]).join(" | ");
-        const repo = parseProjectLinks(links).map(normalizeWebLink).find(url => githubRepository(url));
-        return repo ? readyRepoTechnologies.current.get(repo) || [] : [];
-      });
-      const skillUpdate = addRepositorySkills(
-        chosenResume.skills,
-        discoveredSkills,
-      );
+      const repositorySkills = demo || !technicalOptions ? { technologies: [], failed: [] }
+        : await collectRepositorySkills(projectList(chosenResume.projects).flatMap(projectLinkUrls).map(normalizeWebLink));
+      if (repositorySkills.failed.length) setMessage("Some GitHub repositories could not be checked. Your existing skills were kept; review the Skills section and add any missing technologies before downloading.");
+      const skillUpdate = addRepositorySkills(chosenResume.skills, repositorySkills.technologies);
       chosenResume.skills = skillUpdate.skills;
       setAddedRepoSkills(skillUpdate.added);
       if (demo) {
@@ -1769,8 +1764,7 @@ function App() {
           ...data,
           resume: normalizeResume({
             ...data.resume,
-            skills: addRepositorySkills(data.resume.skills, skillUpdate.added)
-              .skills,
+            skills: retainSkills(chosenResume.skills, data.resume.skills),
             projects: preserveProjectHeadings(
               chosenResume.projects,
               data.resume.projects,
@@ -1958,6 +1952,7 @@ function App() {
       setAiResume(
         normalizeResume({
           ...result.resume,
+          skills: retainSkills(source.skills, result.resume.skills),
           projects: preserveProjectHeadings(
             source.projects,
             result.resume.projects,
